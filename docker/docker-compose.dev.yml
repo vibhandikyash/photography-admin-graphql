@@ -1,0 +1,64 @@
+version: "3.3"
+
+services:
+  app:
+    container_name: ${NODE_CONTAINER_NAME}
+    # image: ${NODE_CONTAINER_IMAGE}
+    restart: unless-stopped
+    build:
+      context: .
+    env_file:
+      - ./.env.docker
+    volumes:
+      - .:/srv/app
+      - app_node_modules:/srv/app/node_modules
+    command: npm run start
+    ports:
+      - ${NODE_LOCAL_PORT}:${NODE_DOCKER_PORT}
+    depends_on:
+      # - postgres
+      - redis
+    networks:
+      - default
+    links:
+      # - postgres
+      - redis
+
+  # postgres:
+  #   container_name: ${POSTGRES_CONTAINER_NAME}
+  #   image: ${POSTGRES_CONTAINER_IMAGE}
+  #   environment:
+  #     # POSTGRES_HOST: ${POSTGRES_DB_HOST}
+  #     POSTGRES_USER: ${POSTGRES_DB_USER}
+  #     POSTGRES_DB: ${POSTGRES_DB_NAME}
+  #     POSTGRES_PASSWORD: ${POSTGRES_DB_PASSWORD}
+  #   ports:
+  #     - ${POSTGRES_LOCAL_PORT}:${POSTGRES_DOCKER_PORT}
+  #   volumes:
+  #     - ../../${NODE_CONTAINER_NAME}/postgres_data:/var/lib/postgresql/data
+  #   networks:
+  #     - default
+
+  redis:
+    container_name: ${REDIS_CONTAINER_NAME}
+    image: ${REDIS_CONTAINER_IMAGE}
+    command:
+      [
+        "redis-server",
+        "--appendonly",
+        "yes",
+        "--requirepass",
+        "${REDIS_PASSWORD}",
+      ]
+    ports:
+      - ${REDIS_LOCAL_PORT}:${REDIS_DOCKER_PORT}
+    volumes:
+      - ../../${NODE_CONTAINER_NAME}/redis_data:/data
+    networks:
+      - default
+
+networks:
+  default: null
+
+volumes:
+  app_node_modules: null

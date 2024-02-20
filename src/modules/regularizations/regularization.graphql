@@ -1,0 +1,123 @@
+type Query {
+  regularizeRequestCount(where: RegularizeRequestWhereUniqueInput!): RegularizeRequestCountResponse @isSystemUser @hasPermission(permissions:[{ modules: "EVENT_MANAGEMENT",access: "readOnlyAccess"}]) @isAuthenticated @rateLimit(window: "60s", max: 30)
+  regularizeRequests(filter: RegularizeRequestsFilter, where: RegularizeRequestsWhereInput!): RegularizeRequestsResponse  @isSystemUser @hasPermission(permissions:[{ modules: "EVENT_MANAGEMENT",access: "readOnlyAccess"}]) @isAuthenticated @rateLimit(window: "60s", max: 30)
+  regularizeRequestDetails(where: RegularizeRequestWhereUniqueInput!): RegularizeRequestDetailsResponse  @isSystemUser @hasPermission(permissions:[{ modules: "EVENT_MANAGEMENT",access: "readOnlyAccess"}]) @isAuthenticated @rateLimit(window: "60s", max: 30)
+}
+
+type Mutation {
+  createRegularizeWebRequest(data: CreateRegularizeWebRequestInput!, where: EventTimingWhereUniqueInput!): Response @hasRole(roles: ["FREELANCER"]) @rateLimit(window: "60s", max: 15)
+  updateRegularizeRequestStatus(data: UpdateRegularizeRequestStatusInput!, where: RegularizeRequestWhereUniqueInput!): UpdateRegularizeRequestStatusResponse  @isSystemUser @hasPermission(permissions:[{ modules: "EVENT_MANAGEMENT",access: "moderateAccess"}]) @isAuthenticated @rateLimit(window: "60s", max: 20)
+  updateInsufficientRequestStatus(data: UpdateInsufficientRequestStatusInput!, where: RegularizeRequestWhereUniqueInput!): UpdateInsufficientRequestStatusResponse  @isSystemUser @hasPermission(permissions:[{ modules: "EVENT_MANAGEMENT",access: "moderateAccess"}]) @isAuthenticated @rateLimit(window: "60s", max: 20)
+}
+
+# =======================================CREATE REGULARIZE WEB REQUEST=======================================
+
+input CreateRegularizeWebRequestInput {
+  startDate: DateTime!
+  endDate: DateTime!
+}
+
+input EventTimingWhereUniqueInput {
+  id: ID!
+}
+
+# ===========================REGULARIZE REQUEST COUNT=====================================
+
+input RegularizeRequestWhereUniqueInput {
+  id: ID!
+}
+
+type RegularizeRequestCountResponse {
+  count: Int
+}
+
+# ===========================REGULARIZE REQUESTS=====================================
+
+input RegularizeRequestsFilter {
+  skip: Int
+  limit: Int
+}
+
+input RegularizeRequestsWhereInput {
+  eventId: ID!
+}
+
+type RegularizeRequestsResponse {
+  count: Int
+  data: [RegularizeRequest]
+}
+
+type RegularizeRequest {
+  id: ID
+  userId: User
+  requestType: RegularizeRequestType
+  status: RegularizeRequestStatus
+  startDate: DateTime
+  endDate: DateTime
+  priority: RegularizeRequestPriority
+  ticketNo: Int
+}
+
+# ===========================REGULARIZE REQUEST DETAILS ===============================
+
+type RegularizeRequestDetailsResponse {
+  regularizeRequest: RegularizeRequest
+  freelancerAttendanceTimings: RegularizeRequestLoggedTiming
+  previousTransactionData: RegularizeRequestTransaction
+  updatedTransactionData: RegularizeRequestTransaction
+}
+
+type RegularizeRequestTransaction {
+  eventFees: Float
+  bookingFees: Float
+  noOfDays: Float
+}
+
+type RegularizeRequestLoggedTiming {
+  endDate: DateTime
+  startDate: DateTime
+}
+
+enum RegularizeRequestPriority {
+  HIGH
+  URGENT
+  NORMAL
+}
+
+enum RegularizeRequestStatus {
+  APPROVED
+  REJECTED
+  PENDING
+}
+
+enum RegularizeRequestType {
+  REGULARIZE
+  INSUFFICIENT_HOURS
+}
+
+# ======================UPDATE REGULARIZE REQUEST STATUS========================
+
+input UpdateRegularizeRequestStatusInput {
+  status: UpdateRegularizeRequestStatus!
+}
+
+type UpdateRegularizeRequestStatusResponse {
+  status: String
+  message: String
+}
+
+enum UpdateRegularizeRequestStatus {
+  APPROVED
+  REJECTED
+}
+
+# ======================UPDATE INSUFFICIENT REQUEST STATUS========================
+
+input UpdateInsufficientRequestStatusInput {
+  status: UpdateRegularizeRequestStatus!
+}
+
+type UpdateInsufficientRequestStatusResponse {
+  status: String
+  message: String
+}

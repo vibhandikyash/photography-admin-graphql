@@ -1,0 +1,20 @@
+{
+  "editor.codeActionsOnSave": {
+    "source.organizeImports": "explicit",
+    "source.fixAll": "explicit",
+    "source.fixAll.eslint": "explicit",
+    "source.fixAll.stylelint": "explicit"
+  },
+  "eslint.validate": [
+    "javascript",
+    "graphql"
+  ],
+  "[javascript]": {
+    "editor.formatOnSave": true
+  },
+  "cSpell.words": [
+    "aadhaar",
+    "aadhar",
+    "Wedlancer"
+  ]
+}

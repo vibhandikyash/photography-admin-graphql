@@ -1,0 +1,43 @@
+type Mutation {
+  createFreelancerDispute(data: CreateDisputeInput!, where: CreateFreelancerDisputeWhereInput!): Response @hasRole(roles: ["RECRUITER"]) @rateLimit(window: "60s", max: 15)
+  createRecruiterDispute(data: CreateDisputeInput!, where: EventWhereUniqueInput!): Response @hasRole(roles: ["FREELANCER"]) @rateLimit(window: "60s", max: 15)
+}
+
+type Query {
+  getFreelancerWebEventDispute(where: EventWhereUniqueInput!): Dispute @hasRole(roles: ["FREELANCER"]) @rateLimit(window: "60s", max: 60)
+  getRecruiterWebEventDispute(where: GetRecruiterWebEventDisputeWhereInput!): Dispute @hasRole(roles: ["FREELANCER", "RECRUITER"]) @rateLimit(window: "60s", max: 60)
+  sendEmailForExportDispute(filter: IssueFilter, where: IssuesWhereFilter): Response @isSystemUser @isAuthenticated @rateLimit(window: "60s", max: 15)
+}
+
+# ================================GET RECRUITER EVENT WEB DISPUTE============================
+
+input GetRecruiterWebEventDisputeWhereInput {
+  eventId: ID!
+  freelancerId: ID!
+}
+
+# ===============================CREATE FREELANCER DISPUTE================================
+
+input CreateDisputeInput {
+  message: String!
+}
+
+input CreateFreelancerDisputeWhereInput {
+  freelancerId: ID
+  eventId: ID
+}
+
+# ================================GET FREELANCER EVENT WEB DISPUTE======================================
+
+type Dispute {
+  id: ID
+  ticketNo: Int
+  note: String
+  resolution: String
+  status: DisputeResolutionStatus
+}
+
+enum DisputeResolutionStatus {
+  RESOLVED
+  PENDING
+}

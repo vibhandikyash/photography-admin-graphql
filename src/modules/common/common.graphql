@@ -1,0 +1,36 @@
+directive @isAuthenticated on FIELD_DEFINITION
+directive @hasRole(roles: [String]) on FIELD_DEFINITION
+directive @isSystemUser on FIELD_DEFINITION
+directive @hasPermission(permissions:[ModulePermissions]) on FIELD_DEFINITION
+directive @isSystemUser on FIELD_DEFINITION
+
+input ModulePermissions {
+  modules: String
+  access: String
+}
+
+directive @rateLimit(
+  max: Int
+  window: String
+  message: String
+  identityArgs: [String]
+  arrayLengthField: String
+) on FIELD_DEFINITION
+
+scalar DateTime
+scalar JSON
+
+enum SortOrder {
+  ASC
+  DESC
+}
+
+input DateRangeInput {
+  from: DateTime!
+  to: DateTime!
+}
+
+input AmountRangeInput {
+  min: Int
+  max: Int
+}

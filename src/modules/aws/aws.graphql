@@ -1,0 +1,25 @@
+type SignedUrlType {
+  signedUrl: String
+  key: String
+}
+
+type SignedUrlsType {
+  signedUrls: [String]
+  keys: [String]
+}
+
+input SignedUrlDataInput {
+  key: String!
+  acl: String
+  contentType: String
+}
+
+input ImageSignedUrlDataInput {
+  keys: [String]
+}
+
+type Mutation {
+  getSignedPutUrl(data: SignedUrlDataInput): SignedUrlType! @isAuthenticated
+  getSignedPutUrls(data: [SignedUrlDataInput]): SignedUrlsType!
+  getImagesSignedUrls(data: ImageSignedUrlDataInput!): [String] @isAuthenticated
+}

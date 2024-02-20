@@ -1,0 +1,30 @@
+type Query {
+  listCountries(filter: LocationFilter!): LocationResponse @rateLimit(window: "60s", max: 60)
+  listStates(filter: LocationFilter!, where: StateWhereFilter): LocationResponse @rateLimit(window: "60s", max: 60)
+  listCities(filter: LocationFilter!, where: CityWhereFilter): LocationResponse  @rateLimit(window: "60s", max: 60)
+}
+
+input StateWhereFilter {
+  countryId: ID
+}
+
+input CityWhereFilter {
+  stateId: ID
+  countryId: ID
+}
+
+input LocationFilter {
+  skip: Int
+  limit: Int
+  search: String
+}
+
+type LocationResponse {
+  count: String
+  data: [LocationRaw]
+}
+
+type LocationRaw {
+  id: ID
+  name: String
+}

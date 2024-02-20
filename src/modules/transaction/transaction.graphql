@@ -1,0 +1,431 @@
+type Query {
+  getFreelancerTransactionList(filter: FreelancerTransactionFilterInput!,where: TransactionWhereInput): FreelancerTransactionListResponse! @isSystemUser @hasPermission(permissions:[{ modules: "TRANSACTION",access: "readOnlyAccess"}]) @isAuthenticated @rateLimit(window: "60s", max: 30)
+  getRecruiterTransactionList(filter: RecruiterTransactionFilterInput!,where: RecruiterTransactionListWhereInput): RecruiterTransactionListResponse! @isSystemUser  @hasPermission(permissions:[{ modules: "TRANSACTION",access: "readOnlyAccess"}]) @isAuthenticated @rateLimit(window: "60s", max: 30)
+  getTransactionTypeList: [String]  @isSystemUser @hasPermission(permissions:[{ modules: "TRANSACTION",access: "readOnlyAccess"}]) @isAuthenticated @rateLimit(window: "60s", max: 30)
+  getTransactionDetailsForEvent(eventId: ID!): TransactionDetailsByEventRaw! @isSystemUser @hasPermission(permissions:[{ modules: "TRANSACTION",access: "readOnlyAccess"}]) @isAuthenticated @rateLimit(window: "60s", max: 30)
+  getCancellationOrConvenienceFeesForEvent(data: CancellationOrConvenienceFeesForEventInput): CancellationOrConvenienceFeesForEventResponse! @isSystemUser @hasPermission(permissions:[{ modules: "TRANSACTION",access: "readOnlyAccess"}]) @isAuthenticated @rateLimit(window: "60s", max: 30)
+  transactionFilters(filter: TransactionFilterInput!): TransactionListResponse @isSystemUser @hasPermission(permissions:[{ modules: "TRANSACTION",access: "readOnlyAccess"}]) @isAuthenticated @rateLimit(window: "60s", max: 30)
+  getRecruiterAvailableBalance(recruiterId: ID!): RecruiterAvailableBalanceResponse! @isSystemUser @hasPermission(permissions:[{ modules: "TRANSACTION",access: "readOnlyAccess"}]) @isAuthenticated @rateLimit(window: "60s", max: 30)
+  getTopUpTransactionList(filter: GetTopUpTransactionListFilterInput, where: GetTopUpTransactionListWhereInput): GetTopUpTransactionListResponse @isSystemUser @hasPermission(permissions:[{ modules: "TRANSACTION",access: "readOnlyAccess"}]) @isAuthenticated @rateLimit(window: "60s", max: 30)
+  sendEmailForExportFreelancerTransactions(filter: FreelancerTransactionFilterInput,where: TransactionWhereInput): Response @isSystemUser @isAuthenticated @rateLimit(window: "60s", max: 15)
+  sendEmailForExportRecruiterTransactions(filter: RecruiterTransactionFilterInput,where: RecruiterTransactionListWhereInput): Response @isSystemUser @isAuthenticated @rateLimit(window: "60s", max: 15)
+  sendEmailForExportTopUpTransactions(filter: GetTopUpTransactionListFilterInput, where: GetTopUpTransactionListWhereInput): Response @isSystemUser @isAuthenticated @rateLimit(window: "60s", max: 15)
+  getRecruiterWebPaymentDetails(where: TransactionWhereUniqueInput!): GetRecruiterWebPaymentDetailsResponse @hasRole(roles: ["RECRUITER"]) @rateLimit(window: "60s", max: 60)
+}
+
+type Mutation {
+  initialPaymentAndTopUpByRecruiter(data: InitialPaymentByRecruiterInput!): Response! @isSystemUser  @hasPermission(permissions:[{ modules: "TRANSACTION",access: "moderateAccess"}]) @isAuthenticated @rateLimit(window: "60s", max: 20)
+  updatePaymentStatus(data: UpdatePaymentStatusInput!): Response @isSystemUser @hasPermission(permissions:[{ modules: "TRANSACTION",access: "moderateAccess"}])  @isAuthenticated  @rateLimit(window: "60s", max: 20)
+  freelancerTrainingFees(data: FreelancerTrainingFeesInput): Response! @isSystemUser @hasPermission(permissions:[{ modules: "TRANSACTION",access: "moderateAccess"}]) @isAuthenticated  @rateLimit(window: "60s", max: 20)
+  waiveOffTransactionForCancellationAndConvenienceFees(data: WaiveOffInputType!): Response! @isSystemUser @hasPermission(permissions:[{ modules: "TRANSACTION",access: "moderateAccess"}]) @isAuthenticated  @rateLimit(window: "60s", max: 20)
+  createTopUpForRecruiter(data: CreateTopUpForRecruiterInput!): Response! @isSystemUser @hasPermission(permissions:[{ modules: "TRANSACTION",access: "moderateAccess"}]) @isAuthenticated  @rateLimit(window: "60s", max: 20)
+  createWebTopUpRequest(data: CreateWebTopUpRequestInput!, where: EventWhereUniqueInput!): Response! @hasRole(roles: ["RECRUITER"]) @rateLimit(window: "60s", max: 20)
+}
+
+# ===================================CREATE WEB TOP-UP-REQUEST====================================
+
+input CreateWebTopUpRequestInput {
+  amount: Float!
+  note: String
+  modeOfPayment: ModeOfPaymentForTopUpRequest!
+  freelancerId: ID!
+}
+
+enum ModeOfPaymentForTopUpRequest {
+  CASH
+  ONLINE
+}
+# ===================================GET RECRUITER WEB PAYMENTS DETAILS========================================
+
+input TransactionWhereUniqueInput {
+  id: ID!
+}
+
+union GetRecruiterWebPaymentDetailsResponse = BookingFeesPayment | CancellationFeesPayment
+
+type BookingFeesPayment {
+  freelancers: [FreelancersPayment]
+}
+
+type CancellationFeesPayment {
+  initialCost: Float
+  deductionCharges: Int
+  refundAmount: Float
+  cancellationAmount: Float
+}
+
+type FreelancersPayment {
+  id: ID
+  user: FreelancerDetails
+  finalizedPrice: Float
+  createdAt: DateTime
+  note: String
+}
+
+type Transaction {
+  id: ID
+  transactionType: TransactionType
+  transactionStatus: TransactionStatus
+  transactionSubType: TransactionSubType
+  eventId: ID
+  userId: ID
+  amount: Float
+  modeOfTransaction: ModeOfTransaction
+  createdAt: DateTime
+}
+
+enum ModeOfTransaction {
+  ONLINE
+  CHEQUE
+  CASH
+}
+
+type GetTopUpTransactionListResponse {
+  count: Int
+  data: [TopUpTransactionRaw]
+}
+
+type TopUpTransactionRaw {
+  amount: String
+  status: TopUpTransactionStatus
+  createdAt: DateTime
+  sender: User
+  receiver: User
+  seriesNo: Int
+}
+
+input GetTopUpTransactionListWhereInput {
+  status: [TopUpTransactionStatus]
+  createdAt: DateFilter
+}
+
+input GetTopUpTransactionListFilterInput {
+  skip: Int
+  limit: Int
+  sortOn: TopUpTransactionListSortOn
+  sortBy: SortUsersBy
+  search: String
+}
+
+enum TopUpTransactionListSortOn {
+  createdAt
+  status
+}
+
+input DateFilter {
+  after: DateTime,
+  before: DateTime
+}
+
+type TransactionListResponse {
+  count: String
+  data: [TransactionRaw]
+}
+
+type RecruiterAvailableBalanceResponse {
+  totalBalance: Float
+}
+
+type TransactionRaw {
+  id: ID
+  transactionType: String
+  transactionStatus: String
+  transactionSubType: String
+  eventId: ID
+  userId: ID
+  amount: Float
+  modeOfTransaction: String
+  createdAt: DateTime
+}
+
+input CreateTopUpForRecruiterInput {
+  recruiterId: ID!
+  amount: Float!
+  modeOfPayment: ModeOfPayment!
+  note: String
+}
+
+input TransactionFilterInput {
+  skip: Int
+  limit: Int
+  sortOn: TransactionField
+  sortBy: SortUsersBy
+  getDBField: [TransactionField]
+  search: String
+  distinct: Boolean
+}
+
+enum TopUpTransactionStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  EXPIRED
+}
+
+enum TransactionField {
+  id
+  transactionType
+  transactionStatus
+  transactionSubType
+  eventId
+  userId
+  amount
+  modeOfTransaction
+  createdAt
+}
+
+input CancellationOrConvenienceFeesForEventInput {
+  eventId: ID!
+  transactionType: GetAmountOfTransactionType!
+}
+
+input FreelancerTrainingFeesInput {
+  freelancerId: ID,
+  transactionType: TransactionType,
+  amount: Float,
+  modeOfPayment: ModeOfPayment,
+  note: String
+}
+
+input WaiveOffInputType {
+  eventId: ID!,
+  transactionType: TransactionType!,
+  waiveOffType: TransactionSubType!,
+  amount: Float!,
+  modeOfPayment: ModeOfPayment!,
+  note: String
+}
+
+input TransactionWhereInput {
+  location: [String]
+  transactionType: [TransactionType]
+  transactionAmount: AmountRangeInput
+  transactionStatus: [TransactionStatus]
+  transactionDate: DateRangeInput
+}
+
+input RecruiterTransactionListWhereInput {
+  transactionDate: DateRangeInput
+  transactionAmount: AmountRangeInput
+  paymentMode: [ModeOfPayment]
+  transactionType: [TransactionType]
+}
+
+input FreelancerTransactionFilterInput {
+  skip: Int
+  limit: Int
+  sortOn: FreelancerTransactionField
+  sortBy: SortUsersBy
+  search: String
+  distinct: Boolean
+}
+
+input RecruiterTransactionFilterInput {
+  skip: Int
+  limit: Int
+  sortOn: RecruiterTransactionField
+  sortBy: SortUsersBy
+  search: String
+  distinct: Boolean
+}
+
+type CancellationFeesForEvent {
+  cancellationAmount: Float
+}
+
+type CancellationOrConvenienceFeesForEventResponse {
+  amount: Float
+}
+
+type FreelancerTransactionListResponse {
+  count: Int
+  data: [FreelancerTransactionListRaw]
+}
+
+type FreelancerTransactionListRaw {
+  id: ID
+  freelancerName: String
+  freelancerContactNo: String
+  countryCode: String
+  transactionType: String
+  amount: Float
+  eventName: String
+  startDate: DateTime
+  endDate: DateTime
+  location: LocationDetails
+  paymentStatus: String
+  transactionDate: DateTime
+  freelancerBreakdown: FreelancerBreakdownRaw
+  seriesNo: Int
+}
+
+type FreelancerBreakdownRaw {
+  eventId: ID
+  eventName: String
+  perDayPrice: Float
+  eventDays: Float
+  updatedEventDays: Float
+  feesAmount: Float
+  deduction: Float
+  finalAmount: Float
+}
+
+type RecruiterTransactionListResponse {
+  count: Int
+  data: [RecruiterTransactionListRaw]
+}
+
+type RecruiterTransactionListRaw {
+  id: ID
+  recruiterId:ID
+  recruiterName: String
+  recruiterContactNo: String
+  countryCode: String
+  transactionType: String
+  transactionSubType: String
+  parentId: ID
+  amount: Float
+  eventName: String
+  startDate: DateTime
+  endDate: DateTime
+  location: LocationDetails
+  paymentStatus: String
+  modeOfPayment: String
+  updatedBalance: Float
+  transactionDate: DateTime
+  bookingTransactionBreakdown: [BookingTransactionBreakdownRaw]
+  convenienceTransactionBreakdown: [ConvenienceTransactionBreakdownRaw]
+  bookingFeesRefundTransactionBreakdown: [BookingFeesRefundTransactionBreakdownRaw]
+  convenienceFeesRefundTransactionBreakdown: [BookingFeesRefundTransactionBreakdownRaw]
+  cancellationFeesTransactionBreakdown: [CancellationFeesTransactionBreakdown]
+  seriesNo: Int
+}
+
+type BookingTransactionBreakdownRaw {
+  freelancerName: String
+  transactionType: String
+  perDayPrice: Float
+  eventDays: Float
+  updatedEventDays: Float
+  startDate: DateTime
+  endDate: DateTime
+  finalAmount: Float
+  modeOfPayment: String
+}
+
+type ConvenienceTransactionBreakdownRaw {
+  startDate: DateTime
+  endDate: DateTime
+  eventDays: Float
+  updatedEventDays: Float
+  numberOfFreelancers: Int
+  charges: Float
+  transactionType: String
+  finalAmount: Float
+  modeOfPayment: String
+}
+
+type BookingFeesRefundTransactionBreakdownRaw {
+  startDate: DateTime
+  endDate: DateTime
+  cancelledFreelancer: String
+  cancelledFreelancerFees: Float
+  modeOfPayment: String
+}
+
+type CancellationFeesTransactionBreakdown {
+  startDate: DateTime
+  endDate: DateTime
+  cancellationDate: DateTime
+  eventCost: Float
+  cancellationPercentage: Float
+  cancellationCharges: Float
+  modeOfPayment: String
+}
+
+
+type TransactionDetailsByEventRaw {
+  eventName: String
+  numberOfFreelancers: Int
+  numberOfDaysOfEvent: Int
+  freelancerBreakdown: [AssignedFreelancersTransactionDetails]
+  convenienceFees: Float
+  totalPayableAmount: Float
+}
+
+type AssignedFreelancersTransactionDetails {
+  freelancerName: String
+  freelanceCategory: String
+  finalAmount: Float
+}
+
+enum TransactionStatus {
+  COMPLETED
+  PENDING
+}
+
+enum TransactionType {
+  EVENT_FEES
+  BOOKING_FEES
+  TRAINING_FEES
+  INITIAL_FEES
+  ADDITIONAL_BOOKING_FEES
+  CANCELLATION_CHARGES
+  TOP_UP
+  REFUND
+  WAIVE_OFF
+  CONVENIENCE_FEES
+}
+
+enum TransactionSubType {
+  CANCELLATION_CHARGES
+  CONVENIENCE_FEES
+}
+
+enum ModeOfPayment {
+  CASH
+  ONLINE
+  CHEQUE
+}
+
+enum GetAmountOfTransactionType {
+  CONVENIENCE_FEES
+  CANCELLATION_CHARGES
+}
+
+
+input InitialPaymentByRecruiterInput {
+  recruiterId: ID!
+  transactionType: TransactionType!
+  amount: Float!
+  modeOfPayment: ModeOfPayment!
+  note: String
+}
+
+input UpdatePaymentStatusInput {
+  transactionId: ID!
+  transactionStatus: TransactionStatus
+}
+
+enum FreelancerTransactionField {
+  freelancerName
+  contactNo
+  transactionType
+  transactionStatus
+  eventName
+  location
+  createdAt
+  updatedAt
+}
+
+
+enum RecruiterTransactionField {
+  recruiterName
+  recruiterContactNo
+  transactionType
+  transactionStatus
+  eventName
+  location
+  createdAt
+  updatedAt
+}
