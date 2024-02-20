@@ -1,0 +1,62 @@
+name: Docker Build and Deploy
+
+on:
+  push:
+    branches:
+      - main
+
+env:
+  AWS_REGION: "ap-south-1"
+  AWS_ACCESS_KEY_ID: ${{secrets.AWS_ACCESS_KEY_ID}}
+  AWS_SECRET_ACCESS_KEY: ${{secrets.AWS_SECRET_ACCESS_KEY}}
+  AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
+  AWS_INSTANCE_IP: "i-07c82bb30c75283fc"
+  AWS_INSTANCE_SSH_KEY: "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDQrqfk5vmSNpegpMavH5d6/aBaCHA9vrKG++adf8WBSG/0le81ATUKXtTByUfc5lamielKLdkXA1lZrFBa1xr1IuQTjawy0S4BIpHKyj1/ClPfObN9UZGCvhAm+ZXoxudh4QvBjFgdpMfjYmnR82+WNdNG6MVkpfGN7ymQpmKfMUHbILvOQhS5ORXDtP9HoQkG3XMogpsDbwwVnYdvUNyUgrJJEksj/rTzGEESGViCmssAGQ+O2w9+tlThvDTIg+/8dOrCgFL6KnlHPhPA1+XSkbeZ7fkSaI9Q2e7Q8MEt/CxktDMdD85ajR6Y/YlUiwhiqme2VJRYXn2GxuPVtG55 wedlancer-test"
+  PEM_FILE: ${{secrets.PEM_FILE}}
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ env.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ env.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: Build and Push Docker Image to ECR
+        run: |
+          echo "Building and pushing Docker image..."
+          export AWS_ACCOUNT_URL="$AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/wedlancer-graphql-server"
+          docker build -t $AWS_ACCOUNT_URL:latest .
+          docker push $AWS_ACCOUNT_URL:latest
+
+      - name: Deploy Docker Compose in EC2
+        run: |
+          echo "SSH into EC2 instance..."
+          PEM_FILE_CONTENT="${{ env.PEM_FILE }}"
+          echo "$PEM_FILE_CONTENT" > wedlancer-test.pem
+          chmod 400 wedlancer-test.pem
+
+          ssh -o StrictHostKeyChecking=no -i "wedlancer-test.pem" ubuntu@ec2-35-154-119-55.ap-south-1.compute.amazonaws.com <<EOF
+            echo "AWS ECR authorize"
+            sudo aws ecr get-login-password --region ap-south-1
+            sudo docker login -u AWS -p eyJwYXlsb2FkIjoiajNvalZzcEZtOE4wbTR1eUtQOEdtM2xwV0JxVHlNMzU5ajJYMExLajNSRHkxZkxvbG14VGZNYzJKRkZpT2pOQm1UUzJ5RGRNcGk3VG1BdUpyODdFZFh5OXhMSzVLcGdGaGh2cEgxaVc0VFZzcmJFTXU2Vkk3UW0xYXhpQ1hWVXFwekRSRWVkaGQ3NUxSUjJ5MkY2bmhQeFFQY2ZzZW15c2tPdnBjcHhkVHdlMGlRWDhtcDZyS3ZaaUNGSktDNHQyWlBac0xkZlY5V1I3cXEzb0h1dWFFL29wemZuZzhXVDhQMGttM2dBcmp6ZXgxMy9BMlZQTVY0bG9HVTVIa0tKME9GWUdwNmpaNHVHUnFMUURzNGtFU2RkRmd4VEJZT1B1WnBlUHRuc0hwUDcyWExCVGV4NXluM1V6cWlpTVlPMkZGVmM3TEZSbVR5WkFCN0xKWW5KMnpBckdrSUdybDhWNTRUNUdGNUJIL3FlWTdkSTlab25nd0N4NkJYazg0ZXovSlFPU0wvNC9HMzlIRnVTOXJoWnR0eXl6dGxlVXl6VmMxNmVBSFk3NDM3eWVCREZyZTdnSTZtU3JhdmlQZGYwclc2RFVkM2h1VEQ3RHROZ0RjVDRBUk1UcDBkSVRtN2VQUHB6cXZjY0VxMG5DUXRTeHlsTjZWMDRGMk5RZU5tcWpCKys4RXdiU3NBZ2hQWWhlSDh4VDFseDd0R1FlL2JQeWlNaHQwRm10OGYwbWV0TmlvR0c4QmJhTGE1aGlLK0h6Sm52UzR3TTRKbFRFWE9TZE52Q1dNckhSQnFraTdPNUpCM05scWVOZFJ0WldzRDlPZmtoSEhtL09vdTAzN21pbUVaR24zeUZxOE9mQi83NWFhWDc3bFp0N040N29aT2k4VjhoWkl2SHJ2SUs2ODNHRGFVNjhGS1g4cjNReDZFUlEyTmpWOGpPa3dPOTFPa0U5dDIrQXJMMk4zRHFBVndWbERiMklVK2dyVjJLdGhGN1FIdi9Zdkt3eVRrekxKNXNMNGJsMWZCSE9lZHBzZmhueEJmUVV1QWQwNS9UbHo4Vk0wblE2K29lK3JDM0JReGx1RFBJWGRmL25MZ1U2RE5aR1pvbTZTUkFsUllLWjN0cGpUeWtoMTlLb2NVTkFOZzJrSnV0cURtZXlrUDJlTWxXczBjZE1rRG1wVmxiaFI1T1pkTzRrdWJ3YXJxenkxTkNiRkxKQWhqeE44eFI4RXNqVnROZWxEaE91TDhnSkprRm5WSGFhdG5RdDhzS0ZWcjc1VlZhNkt4VVN1MlpqcFF2Z2dYZU9ERkNsd2xtcWFvcDltbnFYNGRUektFK2dJMGQxczUxVjhFM1lIS3E3MG5tY3VEb1oxNlptb3lPd2xpWXVaWjNZOHpsbGdPUzVvWjlNVzZpNVVEdz0iLCJkYXRha2V5IjoiQVFJQkFIaUhXYVlUblJVV0NibnorN0x2TUcrQVB2VEh6SGxCVVE5RnFFbVYyNkJkd3dFYW0vRzNNWk52R3FPUXl2Vk85Y2ZyQUFBQWZqQjhCZ2txaGtpRzl3MEJCd2FnYnpCdEFnRUFNR2dHQ1NxR1NJYjNEUUVIQVRBZUJnbGdoa2dCWlFNRUFTNHdFUVFNbkcydWZzZ0MyU2gzM2hYWEFnRVFnRHNlWmdaQ1dLaFZhRXpIaFpUblZiY2UvV2NaZXJzbUNJM1hqYnpYNFpKR1R3NHpHWm02L2dBM0p1ZDlTT3lOckMvdlJFK20reFE2aDFWbm5nPT0iLCJ2ZXJzaW9uIjoiMiIsInR5cGUiOiJEQVRBX0tFWSIsImV4cGlyYXRpb24iOjE2OTUwNzI2Mjh9 https://653265743482.dkr.ecr.ap-south-1.amazonaws.com
+            sudo docker pull 653265743482.dkr.ecr.ap-south-1.amazonaws.com/wedlancer-graphql-server:latest
+            sudo docker run --rm 653265743482.dkr.ecr.ap-south-1.amazonaws.com/wedlancer-graphql-server:latest
+          EOF
+
+      - name: Clean up
+        run: |
+
+          # Remove the PEM file
+          rm pemfile.pem

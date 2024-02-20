@@ -1,0 +1,912 @@
+type Mutation {
+  cancelEvent(data: CancelEventInput!): Response! @hasPermission(permissions:[{ modules: "EVENT_MANAGEMENT",access: "fullAccess"}]) @isSystemUser @isAuthenticated @rateLimit(window: "60s", max: 20)
+  assignFreelancerToEvent(data: AssignFreelancerToEventInput!): Response! @hasPermission(permissions:[{ modules: "EVENT_MANAGEMENT",access: "moderateAccess"}]) @isSystemUser @isAuthenticated @rateLimit(window: "60s", max: 20)
+  updateEventStatus(data: UpdateEventStatusInput!): Response @hasPermission(permissions:[{ modules: "EVENT_MANAGEMENT",access: "moderateAccess"}]) @isSystemUser @isAuthenticated @rateLimit(window: "60s", max: 20)
+  removeFreelancerFromEvent(data: RemoveFreelancerFromEventInput!): Response @hasPermission(permissions:[{ modules: "EVENT_MANAGEMENT",access: "fullAccess"}]) @isSystemUser @isAuthenticated  @rateLimit(window: "60s", max: 20)
+  createOrganicEvent(data: createOrganicEventInput!): createOrganicEventResponse @hasPermission(permissions:[{ modules: "EVENT_MANAGEMENT",access: "moderateAccess"}]) @isSystemUser @isAuthenticated @rateLimit(window: "60s", max: 20)
+  updateOrganicEvent(data: updateOrganicEventInput!, where: updateOrganicEventWhere!): updateOrganicEventResponse @hasPermission(permissions:[{ modules: "EVENT_MANAGEMENT",access: "moderateAccess"}]) @isSystemUser @isAuthenticated @rateLimit(window: "60s", max: 20)
+  organicFreelancerAssignment(data: freelancerAssignmentInput!, where: freelancerAssignmentWhere!): freelancerAssignmentResponse @hasPermission(permissions:[{ modules: "EVENT_MANAGEMENT",access: "moderateAccess"}]) @isSystemUser @isAuthenticated @rateLimit(window: "60s", max: 20)
+  updateAttendanceLog(data: updateAttendanceLogInput!, where: updateAttendanceLogWhere!): updateAttendanceLogResponse @hasPermission(permissions:[{ modules: "EVENT_MANAGEMENT",access: "moderateAccess"}]) @isSystemUser @isAuthenticated @rateLimit(window: "60s", max: 20)
+  updateIssueStatus(data: updateIssueStatusInput!, where: updateIssueStatusWhere!): updateIssueStatusResponse @hasPermission(permissions:[{ modules: "DISPUTE",access: "moderateAccess"}])  @isSystemUser @isAuthenticated @rateLimit(window: "60s", max: 20)
+  updateEventTimings(data: UpdateEventTimingsInput!, where: EventWhereUniqueInput!): UpdateEventTimingsResponse @hasPermission(permissions:[{ modules: "EVENT_MANAGEMENT",access: "moderateAccess"}]) @isSystemUser @isAuthenticated @rateLimit(window: "60s", max: 20)
+  updateUserReviewStatus(data: UpdateUserReviewStatusInput!, where: UpdateUserReviewStatusWhere!): UpdateUserReviewStatusResponse @hasPermission(permissions:[{ modules: "EVENT_MANAGEMENT",access: "moderateAccess"}]) @isSystemUser @isAuthenticated @rateLimit(window: "60s", max: 20)
+  createEventTimings(data: CreateEventTimingsDataInput!, where: CreateEventTimingsWhereInput!): CreateEventTimingsResponse @hasPermission(permissions:[{ modules: "EVENT_MANAGEMENT",access: "moderateAccess"}]) @isSystemUser @isAuthenticated @rateLimit(window: "60s", max: 20)
+  createRecruiterWebEventReview(data: CreateWebEventReviewInput!, where: EventWhereUniqueInput!): Response @hasRole(roles: ["FREELANCER"]) @rateLimit(window: "60s", max: 15)
+  createFreelancerWebEventReview(data: CreateWebEventReviewInput!, where: CreateFreelancerWebEventReviewWhereInput!): Response @hasRole(roles: ["RECRUITER"]) @rateLimit(window: "60s", max: 15)
+  createWebEventTimings(data: CreateWebEventTimingsInput!, where: EventWhereUniqueInput!): Response @hasRole(roles: ["RECRUITER"]) @rateLimit(window: "60s", max: 15)
+  createWebUpfrontEvent(data: CreateWebUpfrontEventInput!): Response @hasRole(roles: ["RECRUITER"]) @rateLimit(window: "60s", max: 15)
+  createWebOrganicEvent(data: CreateWebOrganicEventInput!, where: CreateWebOrganicEventWhereInput!): Response @hasRole(roles: ["RECRUITER"]) @rateLimit(window: "60s", max: 15)
+  cancelWebEvent(where: EventWhereUniqueInput!): Response @hasRole(roles: ["RECRUITER"]) @rateLimit(window: "60s", max: 15)
+}
+
+type Query {
+  getAssignedFreelancerDetails(id:ID!): getAssignedFreelancerDetailsResponse @hasPermission(permissions:[{ modules: "EVENT_MANAGEMENT",access: "readOnlyAccess"}]) @isSystemUser @isAuthenticated @rateLimit(window: "60s", max: 60)
+  issueFilters(filter: IssueFilter!): IssuesListResponse @hasPermission(permissions:[{ modules: "DISPUTE",access: "readOnlyAccess"}]) @isSystemUser @isAuthenticated @rateLimit(window: "60s", max: 60)
+  listIssues(filter: IssueFilter!, where: IssuesWhereFilter!): IssuesListResponse @hasPermission(permissions:[{ modules: "DISPUTE",access: "readOnlyAccess"}]) @isSystemUser @isAuthenticated @rateLimit(window: "60s", max: 60)
+  getEventList(filter: EventListFilter!, where: EventsListWhereFilter): EventListResponse @hasPermission(permissions:[{ modules: "EVENT_MANAGEMENT",access: "readOnlyAccess"}]) @isSystemUser @isAuthenticated @rateLimit(window: "60s", max: 60)
+  getFreelancerAvailabilityList(filter: FreelancerCalenderFilter!,where: FreelancerCalenderWhere): FreelancerAvailabilityResponse! @hasPermission(permissions:[{ modules: "EVENT_MANAGEMENT",access: "readOnlyAccess"}]) @isSystemUser @isAuthenticated @rateLimit(window: "60s", max: 60)
+  getIssueDetails(id: ID!): GetIssueResponse @hasPermission(permissions:[{ modules: "DISPUTE",access: "readOnlyAccess"}]) @isSystemUser @isAuthenticated @rateLimit(window: "60s", max: 60)
+  listComments(filter: CommentFilter!, where: CommentsWhereInput!): CommentsListResponse @hasPermission(permissions:[{ modules: "EVENT_MANAGEMENT",access: "readOnlyAccess"}]) @isSystemUser @isAuthenticated @rateLimit(window: "60s", max: 60)
+  getEventDetails(id: ID!): GetEventResponse @hasPermission(permissions:[{ modules: "EVENT_MANAGEMENT",access: "readOnlyAccess"}]) @isSystemUser @isAuthenticated @rateLimit(window: "60s", max: 60)
+  eventFilters(filter: EventListFilter!): EventListResponse @hasPermission(permissions:[{ modules: "EVENT_MANAGEMENT",access: "readOnlyAccess"}]) @isSystemUser @isAuthenticated @rateLimit(window: "60s", max: 60)
+  listFreelancerWebEvents(filter: ListWebEventsFilter!, where: ListWebEventsWhereInput): ListWebEventsResponse @hasRole(roles: ["FREELANCER"]) @rateLimit(window: "60s", max: 60)
+  getFreelancerWebEvent(where: EventWhereUniqueInput!): EventDetails @hasRole(roles: ["FREELANCER"]) @rateLimit(window: "60s", max: 60)
+  getFreelancerWebAttendanceLogs(where: EventWhereUniqueInput!): [FreelancerAttendanceDetails] @hasRole(roles: ["FREELANCER"]) @rateLimit(window: "60s", max: 60)
+  getFreelancerWebEventFees(where: EventWhereUniqueInput!): GetFreelancerWebEventFeesResponse @hasRole(roles: ["FREELANCER"]) @rateLimit(window: "60s", max: 60)
+  getUserWebEventReviews(where: EventWhereUniqueInput!): [Review] @hasRole(roles: ["FREELANCER", "RECRUITER"]) @rateLimit(window: "60s", max: 60)
+  sendEmailForExportEvents(filter: EventListFilter, where: EventsListWhereFilter): Response @isSystemUser @isAuthenticated @rateLimit(window: "60s", max: 15)
+  getFreelancerWebEventReviews(where: EventWhereUniqueInput!): [Review] @hasRole(roles: ["FREELANCER"]) @rateLimit(window: "60s", max: 60)
+  listRecruiterWebEvents(filter: ListWebEventsFilter!, where: ListWebEventsWhereInput): ListWebEventsResponse @hasRole(roles: ["RECRUITER"]) @rateLimit(window: "60s", max: 60)
+  getRecruiterWebEvent(where: EventWhereUniqueInput!): EventDetails @hasRole(roles: ["RECRUITER"]) @rateLimit(window: "60s", max: 60)
+  getWebUpfrontCategoryFreelancer(where: EventWhereUniqueInput!): [UpfrontCategories]! @hasRole(roles: ["RECRUITER"]) @rateLimit(window: "60s", max: 60)
+  getFreelancerWebAttendanceLogsForRecruiter(where: GetFreelancerWebAttendanceLogsForRecruiterInput!): [FreelancerAttendanceDetails] @hasRole(roles: ["RECRUITER"]) @rateLimit(window: "60s", max: 60)
+  getRecruiterWebEventFees(where: EventWhereUniqueInput!): GetRecruiterWebEventFeesResponse @hasRole(roles: ["RECRUITER"]) @rateLimit(window: "60s", max: 60)
+  getOrganicEventWebFreelancer(where: EventWhereUniqueInput!): [EventFreelancers] @hasRole(roles: ["RECRUITER"]) @rateLimit(window: "60s", max: 60)
+  getRecruiterWebEventReviews(where: GetRecruiterWebEventReviewsInput!): [Review] @hasRole(roles: ["RECRUITER"]) @rateLimit(window: "60s", max: 60)
+  getEventFreelancers(filter: GetEventFreelancersFilter, where: GetEventFreelancerWhereFilter!): GetEventFreelancersResponse @rateLimit(window: "60s", max: 60)
+}
+
+# ==================================CREATE WEB ORGANIC EVENT================================
+
+input CreateWebOrganicEventInput {
+  name: String!
+  location: ID!
+  startDate: DateTime!
+  endDate: DateTime!
+  note: String
+}
+
+input CreateWebOrganicEventWhereInput {
+  freelancerId: ID!
+}
+# ===================================CREATE WEB UPFRONT EVENT===============================
+
+input CreateWebUpfrontEventInput {
+  name: String
+  startDate: DateTime
+  endDate: DateTime
+  location: ID!
+  categories: [UpfrontCategoryRequirement]
+  instagramLink: String
+  note: String
+  totalBudget: Float
+}
+
+input UpfrontCategoryRequirement {
+  categoryType: ID!
+  count: Int
+  pricePerDay: Float!
+}
+
+# ==================================CREATE WEB EVENT TIMINGS===========================================
+
+input CreateWebEventTimingsInput {
+  timings: [WebTimingsInput]
+}
+
+input WebTimingsInput {
+  startDate: DateTime
+  endDate: DateTime
+}
+
+# =====================================GET EVENT FREELANCERS=================================
+
+input GetEventFreelancersFilter {
+  limit: Int
+  skip: Int
+}
+
+input GetEventFreelancerWhereFilter {
+  eventId: ID!
+  freelancerType: FreelancerTypeKey
+}
+
+type GetEventFreelancersResponse {
+  count: Int
+  data: [EventFreelancers]
+}
+
+# =====================================GET RECRUITER WEB EVENT REVIEWS======================================
+
+input GetRecruiterWebEventReviewsInput {
+  freelancerId: ID!
+  eventId: ID!
+}
+
+# =====================================GET RECRUITER WEB EVENT FEES==========================================
+
+type GetRecruiterWebEventFeesResponse {
+  freelancersCount: Int
+  eventDays: Int
+  convenienceFees: Float
+  freelancers: [EventFreelancers]
+}
+
+# ==============================================GET FREELANCER WEB ATTENDANCE LOGS FOR RECRUITER=======================================
+
+input GetFreelancerWebAttendanceLogsForRecruiterInput {
+  freelancerId: ID!
+  eventId: ID!
+}
+
+# ======================================GET WEB UPFRONT CATEGORY FREELANCERS====================================
+
+type UpfrontCategories {
+  id: ID
+  category: Category
+  count: Int
+  pricePerDay: Float
+  freelancers: [EventFreelancers]
+}
+
+type EventFreelancers {
+  user: FreelancerDetails
+  finalizedPrice: Float
+  category: Category
+  isAssigned: Boolean
+  isRequested: Boolean
+}
+
+# ========================================LIST WEB EVENTS================================
+
+input ListWebEventsFilter {
+  limit: Int
+  skip: Int
+}
+
+input ListWebEventsWhereInput {
+  status: EventListWebStatus
+  eventDate: DateRangeInput
+}
+
+type ListWebEventsResponse {
+  count: Int
+  data: [EventDetails]
+}
+
+enum EventListWebStatus {
+  ACTIVE
+  PAST
+}
+
+# ======================================GET FREELANCER WEB EVENT=================================
+
+input EventWhereUniqueInput {
+  id: ID!
+}
+
+type EventDetails {
+  id: ID
+  name: String
+  startDate: DateTime
+  endDate: DateTime
+  city: LocationRaw
+  state: LocationRaw
+  totalBudget: Int
+  leadType: LeadType
+  status: EventStatus
+  isAssigned: Boolean
+  note: String
+  createdAt: DateTime
+  recruiter: Recruiter
+  creator: User
+  wedlancerCoordinator: User
+  timings: [Timings]
+  transaction: Transaction
+  cancelledByUser: User
+}
+
+# =========================================GET FREELANCER ATTENDANCE===============================
+
+type FreelancerAttendanceDetails {
+  id: ID
+  otp: String
+  firstClockIn: DateTime
+  lastClockOut: DateTime
+  eventTimings: EventTimings
+  regularizeRequest: RegularizeRequest
+}
+
+type EventTimings {
+  id: ID
+  startDate: DateTime
+  endDate: DateTime
+}
+
+# =============================================GET FREELANCER WEB EVENT FEES========================
+
+type GetFreelancerWebEventFeesResponse {
+  eventDays: Float
+  perDayFees: Float
+  deduction: Float
+  totalFees: Float
+}
+
+# ==========================================CREATE WEB EVENT REVIEW==================================
+
+input CreateWebEventReviewInput {
+  overAllRating: Float
+  communicationRating: Float
+  punctualityRating: Float
+  review: String
+}
+
+# ========================================CREATE FREELANCER WEB EVENT REVIEW============================
+
+input CreateFreelancerWebEventReviewWhereInput {
+  freelancerId: ID
+  eventId: ID
+}
+
+input CreateEventTimingsDataInput {
+  timings: [CreateEventTimingsInput]
+}
+
+input CreateEventTimingsWhereInput {
+  eventId: ID!
+}
+
+type CreateEventTimingsResponse {
+  status: String
+  message: String
+}
+
+type UpdateUserReviewStatusResponse {
+  status: String
+  message: String
+}
+
+input UpdateUserReviewStatusInput {
+  status: UserReviewStatusType!
+}
+
+input UpdateUserReviewStatusWhere {
+  id: ID!
+}
+
+enum UserReviewStatusType {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+input FreelancerBasedOnEventWhere {
+  eventId: ID!
+}
+
+input UpdateEventWhereInput {
+  id: ID
+}
+
+input AssignFreelancerToEventInput {
+  eventId: ID!
+  userId: ID!
+  eventCategoryId: ID!
+  finalizedPrice: Float!
+}
+
+input CommentDetailsInput{
+  eventId: ID!
+  userId: ID!
+}
+
+input CancelEventInput {
+  eventId: ID!
+  note: String!
+}
+
+input UpdateEventInput {
+  eventName: String
+  eventStartDate: DateTime
+  eventEndDate: DateTime
+  location: String
+  requiredFreelancer: [RequiredFreelancerForLead]
+  totalBudget: Int
+  recruiterType: RecruiterTypeKey
+  recruiterName: String
+  wedlancerCoordinator: ID
+}
+
+input AssignWedlancerToEventInput {
+  eventId: ID!
+  wedlancerCoordinatorId: ID!
+}
+
+input EventsListWhereFilter {
+  name: [String]
+  location: [String]
+  recruiter: [String]
+  recruiterType: [RecruiterTypeKey]
+  eventDate: DateRangeInput
+  status: [EventStatus]
+  leadType: [LeadType]
+}
+
+enum LeadType {
+  UPFRONT
+  ORGANIC
+}
+
+input PremiumFreelancerListWhere {
+  eventName: [String]
+  location: [String]
+  recruiter: [String]
+  recruiterType: [RecruiterTypeKey]
+  eventStatus: [EventStatus]
+}
+
+input AddCommentOnEventInput {
+  eventId: ID
+  comment: String!
+}
+
+enum EventStatus {
+  UPCOMING
+  CANCELLED
+  ONGOING
+  COMPLETED
+}
+
+
+input EventListFilter {
+  skip: Int
+  limit: Int
+  sortOn: EventField
+  sortBy: SortUsersBy
+  search: String
+  getDBField: [EventField]
+  distinct: Boolean
+}
+
+input UpdateEventStatusInput {
+  eventId: ID!
+  status: EventStatus!
+}
+
+
+input RatingInput {
+  overAllServiceRating: Float
+  communicationRating: Float
+  punctualityRating: Float
+}
+
+type getAssignedFreelancerDetailsResponse{
+  id: ID
+  leadType: LeadType
+  categories: [AssignedCategories]
+  freelancers: [AssignedFreelancers]
+}
+
+type AssignedCategories{
+  id: ID!
+  categoryType: ID
+  count: Int
+  pricePerDay: Int
+  eventId: ID
+  freelancers: [AssignedFreelancers]
+  name: String
+}
+
+type FreelancerAttendance {
+  id: ID
+  otp: String
+  firstClockIn: DateTime
+  lastClockOut: DateTime
+  startDate: DateTime
+}
+
+enum RegularizeRequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+type Review {
+  id: ID
+  reviewedTo: User
+  event: Event
+  reviewer: User
+  overAllRating: Float
+  communicationRating: Float
+  punctualityRating: Float
+  review: String
+  status: UserReviewStatusType
+}
+
+type AssignedFreelancers{
+  id: ID
+  finalizedPrice: Float
+  isAssigned: Boolean
+  userId: ID
+  fullName:String
+  contactNo: String
+  countryCode: String
+  badges: [UserBadge]
+  attendance: [FreelancerAttendance]
+  reviewFor: [Review]
+  reviewCreator: [Review]
+}
+
+type UserBadge{
+  badgeId: ID
+  name: String
+}
+
+type RatingReviewResponse {
+  id: ID
+  review: String
+  OverAllService: Float
+  Communication: Float
+  Punctuality: Float
+}
+
+type CommentsData{
+  message: String
+  role: Role
+}
+
+
+
+type Comments {
+  userId: ID
+  fullName: String
+  category: String
+  email: String
+  profilePhoto: String
+}
+
+type CommentsListResponse{
+  comments: [Comments]
+}
+
+enum EventField {
+  id
+  name
+  location
+  status
+  recruiterName
+  recruiterType
+  wedlancerCoordinator
+  leadType
+  createdAt
+}
+
+enum FreelancerFilterField {
+  fullName
+  role
+  category
+  primaryLocation
+  secondaryLocation
+  pricePerDay
+  contactNo
+  rating
+  createdAt
+}
+
+input RemoveFreelancerFromEventInput {
+  eventId: ID
+  freelancerId: ID
+}
+
+input AssignWedlancerCoordinatorInput {
+  wedlancerCoordinatorId: ID
+  eventId: ID
+}
+
+input updateIssueStatusInput{
+  resolution:String
+  status: IssueStatus
+}
+
+input updateIssueStatusWhere{
+  id: ID!
+}
+
+type EventRaw {
+  id: ID
+  name: String
+  location: String
+  startDate: DateTime
+  endDate: DateTime
+  status: String
+  recruiterName: String
+  recruiterId: ID
+  recruiterType: RecruiterTypeKey
+  leadType: String
+  wedlancerCoordinator: String
+  createdBy: ID
+  eventLocationDetails: LocationDetails
+  regularizeRequests: Int
+  insufficientHoursRequests: Int
+  assignedFreelancer: FreelancerDetails
+  requestedFreelancer: FreelancerDetails
+  allFreelancerAssigned: Boolean
+  isWedlancerCoordinatorAssigned: Boolean
+}
+
+type GetIssueResponse{
+  id: ID!
+  status: IssueStatus
+  resolution: String
+  createdAt: DateTime
+  concernRaised: String
+  event: IssueEvent
+  creator: IssueUser
+  user: IssueUser
+}
+
+type IssueEvent {
+  name: String
+  location: LocationDetails
+}
+
+type IssueUser{
+  fullName: String
+  role: Role
+  contactNo: String
+  name: String
+  countryCode: String
+}
+
+type EventListResponse {
+  count: String
+  data: [EventRaw]
+}
+
+type GetEventResponse{
+  event: Event
+  status: String
+}
+
+type Assignee{
+  id: ID
+  role: Role
+  fullName: String
+  contactNo: String
+}
+
+type Recruiter{
+  id: ID
+  fullName: String
+  contactNo: String
+  typeKey: RecruiterTypeKey
+}
+
+type WedlancerCoordinatorListResponse {
+  count: Int
+  data: [WedlancerCoordinator]!
+}
+
+type WedlancerCoordinator {
+  name: String!
+  phoneNumber: String
+  eventName: String!
+  location: String
+  startDate: DateTime
+  endDate: DateTime
+}
+
+type UpdateEventTimingsResponse {
+  status:String
+  message: String
+}
+
+type AssignedFreelancerResponse {
+  count: Int
+  data: [AssignedFreelancers]
+}
+
+
+input FreelancerCalenderWhere {
+  category: [String]
+  dateRange: DateRangeInput
+  primaryLocation: [String]
+  secondaryLocation: [String]
+  pricePerDay: PricePerDayRange
+  typeKey: [FreelancerTypeKey]
+}
+
+input PricePerDayRange {
+  startRange: Float
+  endRange: Float
+}
+
+input FreelancerCalenderFilter {
+  skip: Int
+  limit: Int
+  sortOn: FreelancerFilterField
+  sortBy: SortUsersBy
+  search: String
+  getDBField: [FreelancerFilterField]
+  distinct: Boolean
+}
+
+type FreelancerEventOtp {
+  date: DateTime!
+  otp: String!
+}
+
+type FreelancerAvailabilityResponse {
+  count: Int
+  data: [FreelancerAvailabilityRaw]
+}
+
+type FreelancerAvailabilityRaw {
+  id: ID
+  fullName: String
+  userName: String
+  contactNo: String
+  category: String
+  countryCode: String
+  primaryLocation: String
+  secondaryLocation: String
+  primaryLocationDetails: LocationDetails
+  secondaryLocationDetails: LocationDetails
+  pricePerDay: Float
+  userBadge: [String]
+  startDate: DateTime
+  endDate: DateTime
+  ratings: Float
+  typeKey: FreelancerTypeKey
+}
+
+type LocationDetails {
+  id: ID
+  locationName: String
+}
+
+type FreelancerCalenderResponse {
+  name: String
+  freelancerName: String
+  startDate: DateTime
+  endDate: DateTime
+}
+
+type ReviewAndRatingResponse {
+  id: ID
+  userId: ID
+  review: String
+  overAllServiceRating: Float
+  communicationRating: Float
+  punctualityRating: Float
+}
+
+input IssuesWhereFilter {
+  status: [IssueStatus]
+  location: [ID]
+  createdAt: DateRangeInput
+}
+
+input CommentsWhereInput{
+  eventId: ID!
+}
+
+input IssueFilter {
+  skip: Int
+  limit: Int
+  sortOn: IssuesField
+  sortBy: SortIssuesBy
+  search: String
+  getDBField: [IssuesField]
+  distinct: Boolean
+}
+
+input CommentFilter {
+  skip: Int
+  limit: Int
+}
+
+enum IssuesField {
+  id
+  status
+  raisedBy
+  raisedByContact
+  raisedFor
+  raisedForContact
+  eventName
+  createdAt
+  location
+}
+
+input freelancerAssignmentInput{
+  freelancerId: ID!
+  finalizedPrice: Float!
+}
+
+input freelancerAssignmentWhere{
+  eventId: ID!
+  id: ID!
+}
+
+input removeEventFreelancerInput{
+  freelancerId: ID!
+  eventId: ID!
+}
+
+input updateAttendanceLogInput{
+  firstClockIn: DateTime
+  lastClockOut: DateTime
+}
+
+input updateAttendanceLogWhere{
+  id: ID!
+}
+
+type IssueRaw {
+  id: ID
+  raisedBy: String
+  raisedByContact: String
+  raisedByCountryCode: String
+  raisedFor: String
+  raisedForContact: String
+  raisedForCountryCode: String
+  createdAt: DateTime
+  eventName: String
+  location: LocationDetails
+  status: IssueStatus
+  ticketNo: Int
+  wedlancerCoordinator: User
+}
+
+type IssuesListResponse {
+  count: String
+  data: [IssueRaw]
+}
+
+type updateIssueStatusResponse{
+  status: String
+  message: String
+}
+
+type updateAttendanceLogResponse{
+  status: String
+  message: String
+}
+
+type removeEventFreelancerResponse{
+  status: String!
+  message: String!
+}
+
+type freelancerAssignmentResponse{
+  status: String!
+  message: String!
+}
+
+input UpdateEventTimingsInput {
+  timings: [EventTimingsInput]!
+}
+
+input EventTimingsInput {
+  id: ID!
+  startDate: DateTime!
+  endDate: DateTime!
+}
+
+type Event {
+  id: ID
+  name: String
+  createdBy: ID
+  recruiterId: ID
+  startDate: DateTime
+  endDate: DateTime
+  location: String
+  totalBudget: Int
+  leadType: LeadType
+  status: EventStatus
+  assignedTo: ID
+  isAssigned: Boolean
+  note: String
+  createdAt: DateTime
+  recruiter: Recruiter
+  creator: User
+  assignee: Assignee
+  timings: [Timings]
+  cities: Cities
+  categories: [Categories]
+  freelancers: [Freelancers]
+  cancelledBy: String
+}
+
+type Cities{
+  id: ID
+  name: String
+}
+
+type Timings {
+  id: ID
+  eventId: ID
+  startDate: DateTime
+  endDate: DateTime
+}
+
+type Categories{
+  id: ID
+  categoryType: ID
+  count: Int
+  pricePerDay: Int
+  eventId: ID
+  freelancers: [Freelancers]
+  name: String
+}
+
+type Freelancers{
+  id: ID!
+  eventId: ID
+  userId: ID
+  finalizedPrice: Int
+  isAssigned: Boolean
+  isRequested: Boolean
+  fullName: String
+  contactNo: String
+  countryCode: String
+  category: Category
+}
+
+input createOrganicEventInput{
+  name: String!
+  startDate: DateTime
+  endDate: DateTime
+  location: String!
+  userId: ID!
+  note: String
+  recruiterId: ID!
+  timings: [createEventTimingsInput]
+}
+
+input createEventTimingsInput{
+  startDate: DateTime!
+  endDate: DateTime!
+}
+
+input CreateEventTimingsInput {
+  startDate: DateTime!
+  endDate: DateTime!
+}
+
+input updateOrganicEventInput{
+  name: String
+  startDate: DateTime
+  endDate: DateTime
+  location: String
+  note: String
+  assignedTo: ID
+  status: EventStatus
+  timings: [CreateEventTimingsInput]
+}
+
+input updateOrganicEventWhere{
+  eventId: ID!
+}
+
+type createOrganicEventResponse{
+  status: String!
+  message: String!
+  id: ID!
+}
+
+type updateOrganicEventResponse{
+  status: String!
+  message: String!
+}
+
+enum LeadType{
+  ORGANIC
+  UPFRONT
+}
+
+enum AttendanceType{
+  IN
+  OUT
+}
+
+enum IssueStatus{
+  RESOLVED
+  PENDING
+}
+
+
+enum SortIssuesBy {
+  DESC,
+  ASC
+}

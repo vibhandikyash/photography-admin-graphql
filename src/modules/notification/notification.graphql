@@ -1,0 +1,123 @@
+type Mutation {
+  removeAdminNotification(id: ID!): Response @isSystemUser @isAuthenticated @rateLimit(window: "60s", max: 20)
+  clearWebNotifications(where: ClearWebNotificationsWhereInput): Response @hasRole(roles: ["FREELANCER", "RECRUITER"]) @rateLimit(window: "60s", max: 20)
+}
+
+type Query {
+  getUnreadAdminNotificationCount: GetUnreadAdminNotificationCountResponse  @isSystemUser @isAuthenticated @rateLimit(window: "60s", max: 60)
+  getAdminNotificationList(filter: GetAdminNotificationListFilter): GetAdminNotificationResponse  @isSystemUser @isAuthenticated @rateLimit(window: "60s", max: 60)
+  getUnreadWebNotificationCount: GetUnreadWebNotificationCountResponse @hasRole(roles: ["FREELANCER", "RECRUITER"]) @rateLimit(window: "60s", max: 60)
+  getWebNotifications(filter: GetWebNotificationsFilter): GetWebNotificationsResponse @hasRole(roles: ["FREELANCER", "RECRUITER"]) @rateLimit(window: "60s", max: 60)
+}
+
+# =====================================CLEAR WEB NOTIFICATION=====================================
+
+input ClearWebNotificationsWhereInput {
+  id: [ID]
+}
+
+# ======================================GET WEB NOTIFICATIONS======================================
+
+type GetWebNotificationsResponse {
+  count: Int
+  notifications: [Notification]
+}
+
+input GetWebNotificationsFilter {
+  skip: Int
+  limit: Int
+}
+
+type Notification {
+  id: ID
+  title: String
+  message: String
+  createdAt: DateTime
+  refId: ID
+  refType: NotificationRefType
+  refData: JSON
+  type: NotificationType
+  actionRequired: Boolean
+}
+
+enum NotificationType {
+  ALL_FREELANCERS_ASSIGNED
+  CLOCK_IN_REMINDER
+  CLOCK_OUT_REMINDER
+  DISPUTE_RAISED
+  DISPUTE_RESOLVED
+  EVENT_CANCELLED
+  EVENT_TIMING_REMINDER
+  FREELANCER_ASSIGNED
+  FREELANCER_REVIEW_REMINDER
+  INSUFFICIENT_WORKING_HOURS
+  ORGANIC_LEAD_ASSIGNED
+  ORGANIC_LEAD_SUBMITTED
+  PROFILE_APPROVED
+  PROFILE_COMPLETION_REMINDER
+  PROFILE_REJECTED
+  PROFILE_UNDER_REVIEW
+  RECRUITER_REVIEW_REMINDER
+  REGULARIZATION_REQUEST_APPROVED
+  REGULARIZATION_REQUEST_APPROVED_RECRUITER
+  REGULARIZATION_REQUEST_SUBMITTED
+  TOP_UP_REQUEST_APPROVED_FREELANCER
+  TOP_UP_REQUEST_APPROVED_RECRUITER
+  TOP_UP_REQUEST_RECEIVED
+  UPFRONT_LEAD_SUBMITTED
+  WEDLANCER_COORDINATOR_ASSIGNED
+  UPFRONT_LEAD_ASSIGNED
+  FREELANCER_REMOVED
+}
+
+enum NotificationRefType {
+  EVENT
+  TOP_UP_REQUEST
+  USER
+  LEAD
+  DISPUTE
+  REGULARIZE_REQUEST
+  TRANSACTION
+}
+
+# ======================================GET WEB UNREAD NOTIFICATION COUNT=============================
+
+type GetUnreadWebNotificationCountResponse {
+  count: Int
+}
+
+input GetAdminNotificationListFilter {
+  skip: Int
+  limit: Int
+}
+
+type GetUnreadAdminNotificationCountResponse {
+  count: Int,
+  message: String
+}
+
+enum AdminNotificationType {
+  REGULARIZATION_REQUEST_SUBMITTED
+  INSUFFICIENT_WORKING_HOURS
+  DISPUTE_RAISED
+}
+
+enum AdminNotificationRefType {
+  REGULARIZE_REQUEST
+  DISPUTE
+}
+
+type AdminNotification {
+  id: ID,
+  title: String,
+  message: String,
+  type: AdminNotificationType,
+  refType: AdminNotificationRefType,
+  refData: JSON,
+  hasRead: Boolean
+}
+
+type GetAdminNotificationResponse {
+  count: Int,
+  data: [AdminNotification]
+}

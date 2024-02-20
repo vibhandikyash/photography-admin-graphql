@@ -1,0 +1,371 @@
+type Query {
+  user(where: UserWhereInput!): User @hasRole(roles: ["SUPER_ADMIN", "ADMIN"]) @rateLimit(window: "60s", max: 30)
+  wedlancerCoordinators(filter: UserFilter!): WedlancerCoordinatorsResponse @hasPermission(permissions:[{ modules: "EVENT_MANAGEMENT",access: "readOnlyAccess"}]) @isAuthenticated @rateLimit(window: "60s", max: 40)
+  users(filter: UserFilter!, where: UsersWhereFilter ): UserListResponse @hasRole(roles: ["SUPER_ADMIN", "ADMIN"]) @rateLimit(window: "60s", max: 40)
+  userFilters(filter: UserFilter!): UserListResponse @isAuthenticated @rateLimit(window: "60s", max: 60)
+  getLoggedInUser: LoggedInUserResponse! @isAuthenticated @rateLimit(window: "60s", max: 40)
+  isValidToken(data: TokenInput!): Response @rateLimit(window: "60s", max: 40)
+  getUserPermission: UserPermissionResponse @hasRole(roles: ["SUPER_ADMIN","ADMIN"]) @rateLimit(window: "60s", max: 40)
+  wedlancerCoordinatorsForEvent(filter: WedlancerCoordinatorListFilter!, where: WedlancerCoordinatorListWhereFilter): WedlancerCoordinatorList! @hasPermission(permissions:[{ modules: "EVENT_MANAGEMENT",access: "readOnlyAccess"}]) @isAuthenticated @rateLimit(window: "60s", max: 40)
+}
+type Mutation {
+  createUser(data: UserInput!): UserResponse @hasRole(roles: ["SUPER_ADMIN", "ADMIN"]) @rateLimit(window: "60s", max: 20)
+  updateUser(data: UpdateUserInput!, where: UserWhereInput!): UserResponse @hasRole(roles: ["SUPER_ADMIN", "ADMIN"]) @rateLimit(window: "60s", max: 20)
+  deleteUser(where: UserWhereInput!): UserResponse  @hasRole(roles: ["SUPER_ADMIN", "ADMIN"]) @rateLimit(window: "60s", max: 20)
+  changePassword(data: ChangePasswordInput!): Response  @isAuthenticated @rateLimit(window: "60s", max: 5)
+  login(data: loginInput!): loginResponse @rateLimit(window: "60s", max: 5)
+  logout: logoutResponse @isAuthenticated @rateLimit(window: "60s", max: 5)
+  forgotUserPassword(where: ForgetPasswordInput!): Response @rateLimit(window: "60s", max: 5)
+  setUserPassword(data: TokenInput!): Response @rateLimit(window: "60s", max: 5)
+  updatePermission(data: UpdatePermissionInput!,where: UpdatePermissionWhereInput!): UpdatePermissionResponse @hasRole(roles: ["SUPER_ADMIN", "ADMIN"]) @rateLimit(window: "60s", max: 20)
+  webLogin(data: WebLoginDataInput!): Response @rateLimit(window: "60s", max: 10)
+  verifyOtp(data: VerifyOtpInput!): VerifyOtpResponse @rateLimit(window: "60s", max: 10)
+  register(data: RegisterInput!): Response @rateLimit(window: "60s", max: 10)
+  submitContactInquiry(data: SubmitContactInquiryInput!): Response @rateLimit(window: "60s", max: 20)
+}
+
+# ===========================SUBMIT CONTACT INQUIRY=================================
+
+input SubmitContactInquiryInput {
+  name: String!
+  email: String!
+  contactNo: String!
+  note: String!
+}
+
+input RegisterInput {
+  fullName: String!
+  email: String!
+  contactNo: String!
+  countryCode: String!
+  role: RegisterRoleType!
+}
+
+enum RegisterRoleType{
+  FREELANCER
+  RECRUITER
+}
+
+type VerifyOtpResponse {
+  token: String
+  refreshToken: String
+  isOnboard: Boolean
+}
+
+input WebLoginDataInput {
+  countryCode: String!
+  contactNo: String!
+}
+
+input VerifyOtpInput {
+  countryCode: String!
+  contactNo: String!
+  otp: String!
+}
+
+input WedlancerCoordinatorListFilter {
+  skip: Int
+  limit: Int
+  sortOn: WedlancerCoordinatorField
+  sortBy: SortUsersBy
+  search: String
+  getDBField: [WedlancerCoordinatorField]
+  distinct: Boolean
+}
+
+enum WedlancerCoordinatorField {
+  id
+  fullName
+  eventName
+  eventLocation
+  contactNo
+  createdAt
+}
+
+input WedlancerCoordinatorListWhereFilter {
+  name: [String]
+  contactNo: [String]
+  eventName: [String]
+  eventLocation: [String]
+  eventDate: DateRangeInput
+  isActive: Boolean
+}
+
+type WedlancerCoordinatorList{
+  count: Int
+  data: [WedlancerCoordinatorRaw]
+}
+
+type WedlancerCoordinatorRaw {
+  id: ID
+  fullName: String
+  userName: String
+  countryCode: String
+  contactNo: String
+  eventId: ID
+  eventName: String
+  eventLocation: String
+  eventType: String
+  eventStatus: String
+  startDate: DateTime
+  endDate: DateTime
+  eventLocationDetails: LocationDetails
+}
+
+type Response {
+  status: String
+  message: String
+}
+
+enum SortUsersBy {
+  DESC
+  ASC
+}
+
+enum AccessType {
+  fullAccess
+  moderateAccess
+  readOnlyAccess
+  noAccess
+}
+
+enum UsersField {
+  id
+  fullName
+  userName
+  email
+  verificationStatus
+  role
+  contactNo
+  isFeatured
+  isActive
+  updatedBy
+  createdAt
+  updatedAt
+}
+
+enum VerificationStatus {
+  APPROVED
+  PENDING
+  REJECTED
+}
+
+enum UserRole {
+  WEDLANCER_COORDINATOR
+  SALES
+  FINANCE
+  DISPUTE_MANAGER
+  ADMIN
+}
+
+enum RoleKey {
+  SUPER_ADMIN
+  WEDLANCER_COORDINATOR
+  SALES
+  FINANCE
+  DISPUTE_MANAGER
+  ADMIN
+}
+
+enum ModuleKey {
+  FREELANCER
+  RECRUITER
+  EVENT_MANAGEMENT
+  TRANSACTION
+  DISPUTE
+  ROLE_PERMISSION
+}
+
+type User {
+  id: ID
+  fullName: String
+  userName: String
+  email: String
+  emailVerified: Boolean
+  role: String
+  contactNo: String
+  countryCode: String
+  isFeatured: Boolean
+  isActive: Boolean
+  password: String
+  verificationStatus: String
+  typeKey: UserTypeKey
+}
+
+enum UserTypeKey {
+  PAID
+  NON_PAID
+  WEDLANCER_ASSURED
+  PREMIUM
+  FREE
+}
+
+type UserRaw {
+  id: ID
+  fullName: String
+  userName: String
+  email: String
+  contactNo: String
+  countryCode: String
+  isFeatured: Boolean
+  isActive: Boolean
+  verificationStatus: String
+  role: String
+  updatedBy: ID
+  eventName: String
+  eventLocation: String
+  startDate: DateTime
+  endDate: DateTime
+}
+
+type UserResponse {
+  message: String
+  status: String
+  data: User
+}
+
+type UserListResponse{
+  count: String
+  data: [UserRaw]
+}
+
+type WedlancerCoordinatorsResponse {
+  count: Int
+  data: [User]
+}
+type loginResponse {
+  token: String!
+  refreshToken: String!
+  user: User
+  rolePermission: [UserRolePermission]
+}
+
+type LoggedInUserResponse {
+  user: User
+  isOnboard: Boolean
+  rolePermission: [UserRolePermission]
+}
+
+type UserRolePermission {
+  moduleKey: String
+  fullAccess: Boolean
+  moderateAccess: Boolean
+  readOnlyAccess: Boolean
+  noAccess: Boolean
+}
+
+type logoutResponse {
+  message: String
+}
+
+type UserPermission {
+  id: ID
+  roleKey: RoleKey
+  moduleKey: ModuleKey
+  fullAccess: Boolean
+  moderateAccess: Boolean
+  readOnlyAccess: Boolean
+}
+
+type UserPermissionResponse {
+  permission: JSON
+}
+
+type UserPermission {
+  id: ID
+  roleKey: RoleKey
+  moduleKey: ModuleKey
+  fullAccess: Boolean
+  moderateAccess: Boolean
+  readOnlyAccess: Boolean
+}
+
+input UpdateUserInput {
+  user: UpdateUserDataInput
+}
+
+input UpdateUserDataInput {
+  fullName: String
+  userName: String
+  email: String
+  role: UserRole
+  contactNo: String
+  countryCode: String
+  isActive: Boolean
+  verificationStatus: VerificationStatus
+}
+
+input UserInput {
+  fullName: String!
+  userName: String!
+  email: String!
+  role: UserRole!
+  contactNo: String!
+  countryCode: String!
+  password: String!
+  isActive: Boolean
+  verificationStatus: VerificationStatus
+}
+
+input ForgetPasswordInput {
+  email: String!
+}
+
+input TokenInput {
+  uId: ID
+  token: String
+  password: String
+}
+
+input UserWhereInput{
+  id: ID
+}
+
+input ChangePasswordInput {
+  oldPassword: String!
+  newPassword: String!
+}
+
+
+input loginInput {
+  email: String!
+  password: String!
+}
+
+input UserFilter {
+  skip: Int
+  limit: Int
+  sortOn: UsersField
+  sortBy: SortUsersBy
+  search: String
+  getDBField: [UsersField]
+  distinct: Boolean
+}
+
+input UsersWhereFilter {
+  fullName: [String]
+  userName: [String]
+  email: [String]
+  verificationStatus: [VerificationStatus]
+  contactNo: [String]
+  role: [UserRole]
+  isFeatured: [Boolean]
+  isActive: [Boolean]
+  updatedBy: [ID]
+}
+
+type UpdatePermissionResponse {
+  message: String
+  status: String
+  data: JSON
+}
+
+input UpdatePermissionInput {
+  accessType: AccessType!
+  value: Boolean!
+}
+
+input UpdatePermissionWhereInput {
+  roleKey: RoleKey
+  moduleKey: ModuleKey
+}

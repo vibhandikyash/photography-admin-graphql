@@ -1,0 +1,46 @@
+type Mutation {
+  createUpfrontLead(data: GenerateUpfrontLeadInput!): Response! @hasPermission(permissions:[{ modules: "EVENT_MANAGEMENT",access: "moderateAccess"}]) @isAuthenticated @rateLimit(window: "60s", max: 20)
+  updateUpfrontLead(data: UpdateUpfrontLeadInput!, where: UpdateLeadWhereInput!): Response! @hasPermission(permissions:[{ modules: "EVENT_MANAGEMENT",access: "moderateAccess"}]) @isAuthenticated @rateLimit(window: "60s", max: 20)
+}
+
+input UpdateUpfrontLeadInput {
+  name: String
+  startDate: DateTime
+  endDate: DateTime
+  location: String
+  requiredFreelancer: [UpdateRequiredFreelancerForLead]
+  totalBudget: Int
+  wedlancerCoordinatorId: ID
+  status: String
+  timings: [CreateEventTimingsInput]
+  note: String
+}
+
+input UpdateLeadWhereInput {
+  id: ID
+}
+
+input UpdateRequiredFreelancerForLead {
+  id: ID!
+  categoryType: ID
+  count: Int
+  pricePerDay: Int
+}
+
+input RequiredFreelancerForLead {
+  type: ID!
+  count: Int!
+  pricePerDay: Int!
+}
+
+input GenerateUpfrontLeadInput {
+  name: String!
+  startDate: DateTime!
+  endDate: DateTime
+  location: String!
+  note: String
+  requiredFreelancer: [RequiredFreelancerForLead]!
+  timings: [createEventTimingsInput]!
+  totalBudget: Int!
+  recruiterId: ID!
+}

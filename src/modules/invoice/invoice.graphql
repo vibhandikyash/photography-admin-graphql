@@ -1,0 +1,34 @@
+type Query {
+  eventInvoiceList(where: EventInvoiceListWhereInput!, filter: EventInvoiceListFilterInput): EventInvoiceListResponse @isSystemUser @isAuthenticated @rateLimit(window: "60s", max: 20)
+}
+
+input EventInvoiceListWhereInput {
+  eventId: ID!
+  type: [InvoiceType]
+}
+
+input EventInvoiceListFilterInput {
+  skip: Int
+  limit: Int
+  search: String
+}
+
+type EventInvoiceListResponse {
+  count: Int
+  data: [Invoice]
+}
+
+type Invoice {
+  seriesNo: Int
+  type: InvoiceType
+  key: String
+  user: User
+}
+
+enum InvoiceType {
+  FREELANCER_ASSIGNMENT
+  REFUND
+  DEBIT_NOTE
+  CONVENIENCE_FEES
+  COMMISSION
+}

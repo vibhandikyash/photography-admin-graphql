@@ -1,0 +1,71 @@
+type Query {
+  chatGroups(where: ChatGroupsWhereInput!, filter: ChatGroupsFilter): ChatGroupsResponse @isSystemUser @hasPermission(permissions:[{ modules: "EVENT_MANAGEMENT",access: "readOnlyAccess"}]) @isAuthenticated @rateLimit(window: "60s", max: 30)
+  chatGroup(where: ChatWhereUniqueInput!): ChatGroup @isSystemUser @hasPermission(permissions:[{ modules: "EVENT_MANAGEMENT",access: "readOnlyAccess"}]) @isAuthenticated @rateLimit(window: "60s", max: 30)
+  chatMessages(filter: ChatMessagesFilter, where: ChatWhereUniqueInput!): ChatMessagesResponse @isSystemUser @hasPermission(permissions:[{ modules: "EVENT_MANAGEMENT",access: "readOnlyAccess"}]) @isAuthenticated @rateLimit(window: "60s", max: 30)
+  getWebChatMessages(filter: ChatMessagesFilter, where: ChatWhereUniqueInput!): ChatMessagesResponse @hasRole(roles: ["FREELANCER", "RECRUITER"]) @rateLimit(window: "60s", max: 60)
+  getFreelancerWebChatGroup(where: EventWhereUniqueInput!): [ChatGroup] @hasRole(roles: ["FREELANCER"]) @rateLimit(window: "60s", max: 60)
+  getRecruiterWebOrganicChatGroup(where: EventWhereUniqueInput!): [ChatGroup] @hasRole(roles: ["RECRUITER"]) @rateLimit(window: "60s", max: 30)
+  getRecruiterWebUpfrontChatGroups(where: ChatGroupsWhereInput!, filter: ChatGroupsFilter): ChatGroupsResponse @hasRole(roles: ["RECRUITER"]) @rateLimit(window: "60s", max: 30)
+  getRecruiterWebUpfrontChatGroup(where: ChatWhereUniqueInput!): ChatGroup @hasRole(roles: ["RECRUITER"]) @rateLimit(window: "60s", max: 30)
+}
+
+type ChatGroup {
+  id: ID
+  name: String
+  refId: ID
+  createdBy: ID
+  createdAt: DateTime
+  unreadMessagesCount: Int
+  chatMembers: [ChatUser]
+}
+
+type ChatUser {
+  id: ID
+  fullName: String
+  profilePhoto: String
+  role: Role
+  categoryName: String
+}
+
+#===============================CHAT GROUPS==================================
+
+input ChatGroupsWhereInput {
+  eventId: ID!
+}
+
+input ChatGroupsFilter {
+  limit: Int
+  skip: Int
+}
+
+type ChatGroupsResponse {
+  count: Int
+  chatGroups: [ChatGroup]
+}
+
+
+#==========================CHAT GROUP MESSAGES=================================
+
+input ChatWhereUniqueInput {
+  id: ID!
+}
+
+type ChatMessagesResponse {
+  count: Int
+  chatMessages: [ChatMessage]
+}
+
+type ChatMessage {
+  id: ID
+  message: String
+  createdAt: DateTime
+  hasRead: Boolean
+  sender: ChatUser
+}
+
+input ChatMessagesFilter {
+  limit: Int
+  skip: Int
+  afterDate: DateTime
+  beforeDate: DateTime
+}

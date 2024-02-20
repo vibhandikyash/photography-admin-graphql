@@ -1,0 +1,628 @@
+type Mutation {
+  createFreelancer(data: FreelancerDetailsInput!): CreateFreelancerResponse @hasPermission(permissions:[{ modules: "FREELANCER",access: "moderateAccess"}]) @isSystemUser @rateLimit(window: "60s", max: 20) @isAuthenticated
+  updateFreelancerDetails(data: UpdateFreelancerDetailsInput!, where: FreelancerWhereInput!): UpdateFreelancerDetailsResponse @hasPermission(permissions:[{ modules: "FREELANCER",access: "moderateAccess"}]) @isSystemUser @isAuthenticated @rateLimit(window: "60s", max: 20)
+  createPortfolio(data: PortfolioDetailsInput!, where: FreelancerWhereInput!): CreatePortfolioResponse @hasPermission(permissions:[{ modules: "FREELANCER",access: "moderateAccess"}]) @isSystemUser @isAuthenticated @rateLimit(window: "60s", max: 20)
+  updateCollection(data: PortfolioDetailsInput!, where: UpdateCollectionWhereInput!): UpdatePortfolioResponse @hasPermission(permissions:[{ modules: "FREELANCER",access: "moderateAccess"}]) @isSystemUser @isAuthenticated @rateLimit(window: "60s", max: 20)
+  removeCollection(id: ID!): RemoveCollectionResponse @hasPermission(permissions:[{ modules: "FREELANCER",access: "fullAccess"}]) @isSystemUser @isAuthenticated @rateLimit(window: "60s", max: 15)
+  removeFreelancer(id: ID!): RemoveFreelancerResponse @hasPermission(permissions:[{ modules: "FREELANCER",access: "fullAccess"}]) @isSystemUser @isAuthenticated @rateLimit(window: "60s", max: 15)
+  createFreelancerProfile(data: CreateFreelancerProfileDataInput!): Response @isAuthenticated @rateLimit(window: "60s", max: 10)
+  createCustomEvent(data: CreateCustomEventInput!): CreateCustomEventResponse @hasRole(roles: ["FREELANCER", "RECRUITER"]) @rateLimit(window: "60s", max: 15)
+  updateFreelancerWebProfile(data: UpdateFreelancerWebProfileInput!): Response @hasRole(roles: ["FREELANCER"]) @rateLimit(window: "60s", max: 15)
+  updateFreelancerWebDetails(data: UpdateFreelancerWebDetailsInput!): Response @hasRole(roles: ["FREELANCER"]) @rateLimit(window: "60s", max: 15)
+  updateFreelancerWebBusinessDetails(data: UpdateFreelancerWebBusinessDetailsInput!): Response @hasRole(roles: ["FREELANCER"]) @rateLimit(window: "60s", max: 15)
+  updateWebCollectionAsset(data: UpdateWebCollectionAssetInput, where: CollectionAssetWhereUniqueInput!): Response @hasRole(roles: ["FREELANCER"]) @rateLimit(window: "60s", max: 15)
+  deleteWebCollectionAsset(where: CollectionAssetWhereUniqueInput!): Response @hasRole(roles: ["FREELANCER"]) @rateLimit(window: "60s", max: 15)
+  createWebPortfolio(data: PortfolioDetailsInput!): CreatePortfolioResponse @hasRole(roles: ["FREELANCER"]) @rateLimit(window: "60s", max: 30)
+  updateWebPortfolioCollection(data:  PortfolioDetailsInput!, where: CollectionWhereUniqueInput!): UpdatePortfolioResponse @hasRole(roles: ["FREELANCER"]) @rateLimit(window: "60s", max: 20)
+  deleteWebPortfolioCollection(where: CollectionWhereUniqueInput!): RemoveCollectionResponse @hasRole(roles: ["FREELANCER"]) @rateLimit(window: "60s", max: 15)
+}
+
+type Query {
+  getFreelancerWebDetails: FreelancerDetails @hasRole(roles: ["FREELANCER"]) @rateLimit(window: "60s", max: 40)
+  getFreelancerWebDetailsForVisitors(where: FreelancerWhereInputForVisitors!): FreelancerDetails @rateLimit(window: "60s", max: 40)
+  getFreelancerWebProfileDetails: FreelancerDetails @hasRole(roles: ["FREELANCER"]) @rateLimit(window: "60s", max: 40)
+  getFreelancerWebProfileDetailsForVisitors(where: FreelancerWhereInputForVisitors!): FreelancerDetails @rateLimit(window: "60s", max: 40)
+  getFreelancerWebBusinessDetails: FreelancerDetails @hasRole(roles: ["FREELANCER"]) @rateLimit(window: "60s", max: 40)
+  getFreelancerWebBusinessDetailsForVisitors(where: FreelancerWhereInputForVisitors!): FreelancerDetails @rateLimit(window: "60s", max: 40)
+  getFreelancerWebReviews(filter: FreelancerWebReviewsFilter): FreelancerWebReviewsResponse @hasRole(roles: ["FREELANCER"]) @rateLimit(window: "60s", max:40)
+  getFreelancerWebReviewsForVisitors(filter: FreelancerWebReviewsFilter, where: FreelancerWhereInputForVisitors!): FreelancerWebReviewsResponse @rateLimit(window: "60s", max:40)
+  getDashboardDetails: DashboardDetailsResponse @hasRole(roles: ["FREELANCER"]) @rateLimit(window: "60s", max: 40)
+  getFreelancerUpcomingEvents(filter: UpcomingEventsFilter!, where: UpcomingEventsWhereInput!): UpcomingEventsResponse @hasRole(roles: ["FREELANCER"]) @rateLimit(window: "60s", max: 40)
+  getFreelancerDetails(id: ID!): Freelancer @hasPermission(permissions:[{ modules: "FREELANCER",access: "readOnlyAccess"}]) @isSystemUser @isAuthenticated @rateLimit(window: "60s", max: 40)
+  getFreelancerCategory: [Category!]! @rateLimit(window: "60s", max: 60)
+  getFreelancerBadge: [Badge!]! @isAuthenticated @rateLimit(window: "60s", max: 60)
+  listFreelancers(filter: FreelancerFilter!, where: FreelancerWhereFilter!): FreelancerListResponse @hasPermission(permissions:[{ modules: "FREELANCER",access: "readOnlyAccess"}])  @isSystemUser @isAuthenticated @rateLimit(window: "60s", max: 60)
+  getFreelancerCollection(id: ID!): FreelancerCollection @hasPermission(permissions:[{ modules: "FREELANCER",access: "readOnlyAccess"}]) @isSystemUser @isAuthenticated @rateLimit(window: "60s", max: 60)
+  listCollections(userId: ID!): ListCollectionsResponse! @hasPermission(permissions:[{ modules: "FREELANCER",access: "readOnlyAccess"}]) @isSystemUser @isAuthenticated @rateLimit(window: "60s", max: 60)
+  getWebPortfolioCollection(where: CollectionWhereUniqueInput!): FreelancerCollection @hasRole(roles: ["FREELANCER"]) @rateLimit(window: "60s", max: 40)
+  getWebPortfolioCollectionForVisitors(where: GetWebPortfolioCollectionForVisitorsWhereInput!): FreelancerCollection @rateLimit(window: "60s", max: 40)
+  listWebPortfolioCollections: ListCollectionsResponse @hasRole(roles: ["FREELANCER"]) @rateLimit(window: "60s", max: 40)
+  sendEmailForExportFreelancers(filter: FreelancerFilter, where: FreelancerWhereFilter): Response @isSystemUser @isAuthenticated @rateLimit(window: "60s", max: 15)
+  listWebFreelancers(filter: ListWebFreelancersFilter!, where: ListWebFreelancersWhereInput): ListWebFreelancersResponse @rateLimit(window: "60s", max: 60)
+  getFeaturedWebCollectionAssets(where: FreelancerWhereInputForVisitors!): [FreelancerCollectionAssets] @rateLimit(window: "60s", max: 60)
+  webHomePageDetails: WebHomePageResponse @rateLimit(window: "60s", max: 20)
+  listWebPortfolioCollectionsForVisitors(where: FreelancerWhereInputForVisitors!): ListCollectionsResponse @rateLimit(window: "60s", max: 40)
+  listFreelancerWebPayments(filter: ListFreelancerWebPaymentsFilter!, sort: ListFreelancerWebPaymentsSort, where: listFreelancerWebPaymentsWhereInput): ListFreelancerWebPaymentsResponse @hasRole(roles: ["FREELANCER"]) @rateLimit(window: "60s", max: 40)
+}
+
+# ====================================GET WEB PORTFOLIO COLLECTION FOR VISITORS==============================
+
+input GetWebPortfolioCollectionForVisitorsWhereInput {
+  collectionName: String!
+  userName: String!
+}
+
+input FreelancerWhereInputForVisitors {
+  userName: String!
+}
+
+# ============================= LIST FREELANCER WEB PAYMENTS =========================================
+
+input ListFreelancerWebPaymentsFilter {
+  limit: Int
+  skip: Int
+  search: String
+}
+
+input ListFreelancerWebPaymentsSort {
+  sortBy: SortUsersBy
+  sortOn: FreelancerWebPaymentsSortOnField
+}
+
+enum FreelancerWebPaymentsSortOnField {
+  recruiterName
+  transactionType
+  eventName
+  location
+  createdAt
+}
+
+input listFreelancerWebPaymentsWhereInput {
+  eventDate: DateRangeInput
+  location: ID
+  amount: AmountRangeInput,
+  dateOfPayment: DateRangeInput,
+  transactionStatus: [FreelancerPaymentTransactionStatus]
+}
+
+type ListFreelancerWebPaymentsResponse {
+  count: Int
+  data: [ListFreelancerWebPaymentsRaw]
+}
+
+type ListFreelancerWebPaymentsRaw {
+  seriesNo: Int
+  eventName: String
+  eventDate: DateTime
+  location: LocationRaw
+  recruiterName: String
+  amount: Float
+  dateOfPayment: DateTime
+  transactionStatus: FreelancerPaymentTransactionStatus
+  transactionType: TransactionType
+}
+
+enum FreelancerPaymentTransactionStatus {
+  PENDING
+  COMPLETED
+  CANCELLED
+  EXPIRED
+}
+
+# ============================= HOME PAGE DETAILS ============================
+type WebHomePageResponse {
+  completedProject: Int
+  totalFreelancer: Int
+  businessGenerated: Float
+}
+
+# ============================================GET FEATURED COLLECTION ASSETS====================================
+
+input FreelancerWhereUniqueInput {
+  id: ID!
+}
+
+# ===============================LIST WEB FREELANCERS===========================================
+
+input ListWebFreelancersFilter {
+  limit: Int
+  skip: Int
+  sortOn: WebFreelancersSortOnField
+  sortBy: SortUsersBy
+}
+
+enum WebFreelancersSortOnField {
+  fullName
+  location
+  pricePerDay
+  ratings
+}
+
+input ListWebFreelancersWhereInput {
+  search: String
+  location: ID
+  category: ID
+  freelancerId: ID
+  pricePerDay: AmountRangeInput
+  dateRange: DateRangeInput
+  isFeatured: Boolean
+  freelancerType: FreelancerTypeKey
+}
+
+type ListWebFreelancersResponse {
+  count: Int
+  data: [FreelancerDetails]
+}
+# =============================DASHBOARD DETAILS==============================
+
+type DashboardDetailsResponse {
+  amount: Int
+  projectsCompleted: Int
+}
+
+# ==============================GET UPCOMING EVENTS====================
+
+input UpcomingEventsWhereInput {
+  eventDate: DateRangeInput!
+}
+
+input UpcomingEventsFilter {
+  skip: Int
+  limit: Int
+}
+
+type UpcomingEventsResponse {
+  count: Int
+  data: [Event]
+}
+
+# ===================== CREATE CUSTOM EVENTS================
+
+input CreateCustomEventInput {
+  startDate: DateTime!
+  endDate: DateTime!
+  note: String
+}
+
+type CreateCustomEventResponse {
+  status: String
+  message: String
+}
+
+# ============================== FREELANCER WEB DETAILS========================
+
+type FreelancerDetails {
+  id: ID
+  fullName: String
+  userName: String
+  email: String
+  emailVerified: Boolean
+  verificationStatus: VerificationStatus
+  contactNo:String
+  countryCode: String
+  role: Role
+  isActive: Boolean
+  profile: FreelancerProfileDetails
+  business: FreelancerBusinessDetails
+  userBadges: [UserBadges]
+  profileCompletion: UserProfileCompletion
+}
+
+type UserProfileCompletion {
+  completedProfile: Int
+  title: String
+  messages: [String]
+}
+
+type FreelancerProfileDetails {
+  id: ID
+  bio: String
+  profilePhoto: String
+  coverPhoto: String
+  aadharCardBack: String
+  aadharCardFront: String
+  isFeatured: Boolean
+  typeKey: FreelancerTypeKey
+  averageRating: Float
+}
+
+type FreelancerBusinessDetails {
+  projectsComplete: Int
+  companyName: String
+  tagLine: String
+  pricePerDay: Float
+  primaryLocation: LocationRaw
+  secondaryLocation: LocationRaw
+  accomplishments: String
+  equipmentList: String
+  instagramLink: String
+  category: Category
+  addressLine1: String
+  addressLine2: String
+  city: LocationRaw
+  state: LocationRaw
+  country: LocationRaw
+  zipCode: String
+  totalBalance: Float
+}
+
+# =========================FREELANCER WEB REVIEWS ==============================
+
+input FreelancerWebReviewsFilter {
+  limit: Int
+  skip: Int
+}
+
+type FreelancerWebReviewsResponse {
+  count: Int
+  data: [FreelancerReview]
+}
+
+type FreelancerReview {
+  id: ID
+  event: Event
+  reviewer: User
+  review: String
+  overAllRating: Float
+  communicationRating: Float
+  punctualityRating: Float
+  status: ReviewStatus
+  createdAt: DateTime
+  averageRating: Float
+}
+
+enum ReviewStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+# =======================================UPDATE FREELANCER WEB PROFILE===============================
+
+input UpdateFreelancerWebProfileInput {
+  coverPhoto: String
+  profilePhoto: String
+}
+
+# ===================================UPDATE FREELANCER WEB DETAILS====================================
+
+input UpdateFreelancerWebDetailsInput {
+  bio: String
+  fullName: String
+  userName: String
+}
+
+# ===================================UPDATE FREELANCER WEB BUSINESS DETAILS============================
+
+input UpdateFreelancerWebBusinessDetailsInput {
+  tagLine: String
+  categoryId: ID
+  accomplishments: String
+  equipmentList: String
+  primaryLocation: ID
+  secondaryLocation: ID
+  instagramLink: String
+  pricePerDay: Float
+  aadharCardBack: String
+  aadharCardFront: String
+}
+
+# ======================================UPDATE WEB COLLECTION========================================
+
+input UpdateWebCollectionAssetInput {
+  isFeatured: Boolean
+}
+
+input CollectionAssetWhereUniqueInput {
+  id: ID!
+}
+
+input CollectionWhereUniqueInput {
+  id: ID!
+}
+
+enum FreelancerField {
+  fullName
+  userName
+  email
+  verificationStatus
+  contactNo
+  isActive
+  updatedBy
+  createdAt
+  updatedAt
+  categoryName
+}
+
+input CreateFreelancerProfileDataInput {
+  fullName: String!
+  userName: String!
+  profilePhoto: String
+  categoryId: ID!
+  instagramLink: String
+  aadharCardFront: String!
+  aadharCardBack: String!
+  primaryLocation: ID!
+}
+
+input FreelancerFilter {
+  skip: Int
+  limit: Int
+  sortOn: FreelancerField
+  sortBy: SortUsersBy
+  search: String
+  getDBField: [FreelancerField]
+  distinct: Boolean
+}
+
+input FreelancerWhereFilter {
+  verificationStatus: [VerificationStatus]
+  isActive: [Boolean]
+  categoryName: [ID]
+  location: [String]
+  pricePerDay: [Float]
+  typeKey: [FreelancerTypeKey]
+  isDeleted: Boolean
+}
+
+type FreelancerRaw {
+  id: ID
+  fullName: String
+  userName: String
+  email: String
+  contactNo: String
+  isActive: Boolean
+  verificationStatus: String
+  role: Role
+  updatedBy: ID
+  categoryName: String
+  location: String
+  pricePerDay: Float
+  typeKey: FreelancerTypeKey
+  countryCode: String
+  aadharCardFront: String
+  aadharCardBack: String
+  badges: [UserBadges]
+  isFeatured: Boolean
+}
+
+type UserBadges {
+  id: ID
+  name: String
+}
+
+type FreelancerListResponse {
+  count: Int
+  data: [FreelancerRaw]
+}
+
+type Freelancer {
+  id: ID
+  fullName: String
+  userName: String
+  email: String
+  emailVerified: Boolean
+  verificationStatus: VerificationStatus
+  contactNo: String
+  role: Role
+  isFeatured: Boolean
+  countryCode: String
+  isActive: Boolean
+  updatedBy: ID
+  bio: String
+  profilePhoto: String
+  coverPhoto: String
+  aadharCardFront: String
+  aadharCardBack: String
+  typeKey: FreelancerTypeKey
+  projectsComplete: Int
+  tagLine: String
+  pricePerDay: Float
+  primaryLocation: PrimaryAndSecondaryLocationData
+  secondaryLocation: PrimaryAndSecondaryLocationData
+  accomplishments: String
+  equipmentList: String
+  instagramLink: String
+  categoryId: ID
+  name: String
+  addressLine1: String
+  addressLine2: String
+  city: countryStateCityResponse
+  state: countryStateCityResponse
+  country: countryStateCityResponse
+  zipCode:  String
+  createdBy: ID
+  badgeIds: [ID]
+}
+
+type PrimaryAndSecondaryLocationData {
+  id: ID
+  name: String
+}
+
+type Collections {
+  id: ID!
+  name: String
+  collectionAssets: [FreelancerCollectionAssets]
+  type: CollectionType
+}
+
+type FreelancerCollection {
+  id: ID
+  userId: ID
+  name: String
+  createdBy: ID
+  updatedBy: ID
+  type: CollectionType
+  collectionAssets: [FreelancerCollectionAssets]
+}
+
+type FreelancerCollectionAssets {
+  id: ID
+  userId: ID
+  collectionId: ID
+  url: String
+  title: String
+  isFeatured: Boolean
+  createdBy: ID
+  updatedBy: ID
+}
+
+input FreelancerDetailsInput {
+  fullName: String!
+  userName: String!
+  email: String!
+  contactNo: String!
+  verificationStatus: VerificationStatus!
+  isFeatured: Boolean
+  isActive: Boolean
+  countryCode: String
+  bio: String
+  profilePhoto: String
+  coverPhoto: String
+  aadharCardFront: String
+  aadharCardBack: String
+  typeKey: FreelancerTypeKey!
+  projectsComplete: Int
+  tagLine: String
+  pricePerDay: Float!
+  primaryLocation: ID!
+  secondaryLocation: ID
+  accomplishments: String
+  equipmentList: String
+  instagramLink: String
+  categoryId: ID!
+  addressLine1: String
+  addressLine2: String
+  city: ID
+  state: ID
+  country: ID
+  zipCode: String
+  badgeIds: [ID]!
+}
+
+input UpdateFreelancerDetailsInput {
+  fullName: String
+  userName: String
+  email: String
+  contactNo: String
+  verificationStatus: VerificationStatus
+  isFeatured: Boolean
+  isActive: Boolean
+  countryCode: String
+  bio: String
+  profilePhoto: String
+  coverPhoto: String
+  aadharCardFront: String
+  aadharCardBack: String
+  typeKey: FreelancerTypeKey
+  projectsComplete: Int
+  tagLine: String
+  pricePerDay: Float
+  primaryLocation: ID
+  secondaryLocation: ID
+  accomplishments: String
+  equipmentList: String
+  instagramLink: String
+  categoryId: ID
+  addressLine1: String
+  addressLine2: String
+  city: ID
+  state: ID
+  country: ID
+  zipCode: String
+  badgeIds: [ID]
+}
+
+input PortfolioDetailsInput {
+  name: String
+  collectionAssets: [UserCollectionAssetsInput]
+}
+
+input UserCollectionAssetsInput {
+  id: ID
+  url: String
+  title: String
+  isFeatured: Boolean
+}
+
+input FreelancerWhereInput {
+  id: ID!
+}
+
+input UpdateCollectionWhereInput {
+  collectionId: ID!
+  userId: ID!
+}
+
+type CreateFreelancerResponse {
+  status: String!
+  message: String!
+  id: ID!
+}
+
+type ListCollectionsResponse {
+  type: String!
+  collections: [Collections]!
+}
+
+type UpdateFreelancerDetailsResponse {
+  status: String!
+  message: String!
+}
+
+type RemoveCollectionResponse {
+  status: String!
+  message: String!
+}
+
+type CreatePortfolioResponse {
+  status: String!
+  message: String!
+  freelancer: FreelancerCollection!
+}
+
+type RemoveFreelancerResponse {
+  status: String!
+  message: String!
+}
+
+type UpdatePortfolioResponse {
+  status: String!
+  message: String!
+}
+
+type Category{
+  id: ID
+  name: String
+  url: String
+  order: Int
+}
+
+type Badge{
+  id: ID!
+  name: String!
+}
+
+enum CollectionType {
+  IMAGE
+  VIDEO
+}
+
+enum FreelancerTypeKey {
+  WEDLANCER_ASSURED
+  PREMIUM
+  FREE
+}
+
+enum Role {
+  SUPER_ADMIN
+  FREELANCER
+  RECRUITER
+  WEDLANCER_COORDINATOR
+}
+
+enum SortUsersBy {
+  DESC,
+  ASC
+}

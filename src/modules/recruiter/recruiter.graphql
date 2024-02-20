@@ -1,0 +1,354 @@
+type Mutation {
+  createRecruiter(data: RecruiterDetailsInput!): createRecruiterResponse! @isSystemUser @hasPermission(permissions:[{ modules: "RECRUITER",access: "moderateAccess"}]) @rateLimit(window: "60s", max: 20) @isAuthenticated
+  updateRecruiterDetails(data: RecruiterDetailsInput!, where: UpdateRecruiterWhereInput!): updateRecruiterDetailsResponse! @isSystemUser @hasPermission(permissions:[{ modules: "RECRUITER",access: "moderateAccess"}]) @rateLimit(window: "60s", max: 20)  @isAuthenticated
+  removeRecruiter(id: ID!): removeRecruiterResponse! @isSystemUser @hasPermission(permissions:[{ modules: "RECRUITER",access: "fullAccess"}]) @rateLimit(window: "60s", max: 15) @isAuthenticated
+  createRecruiterProfile(data: CreateRecruiterProfileDataInput): Response @isAuthenticated @rateLimit(window: "60s", max: 10)
+  updateRecruiterWebDetails(data: UpdateRecruiterWebDetailsInput!): Response @hasRole(roles: ["RECRUITER"]) @rateLimit(window: "60s", max: 15)
+  updateRecruiterWebProfileDetails(data: UpdateRecruiterWebProfileDetails!): Response @hasRole(roles: ["RECRUITER"]) @rateLimit(window: "60s", max: 15)
+}
+
+type Query {
+  recruiterDashboardDetails: RecruiterDashboardDetailsResponse @isAuthenticated @rateLimit(window: "60s", max: 20)
+  getRecruiterDetails(id: ID!): Recruiter! @isSystemUser @hasPermission(permissions:[{ modules: "RECRUITER",access: "readOnlyAccess"}]) @rateLimit(window: "60s", max: 40) @isAuthenticated
+  listRecruiters(filter: RecruiterFilter!, where: RecruiterWhereFilter): RecruiterListResponse @isSystemUser @hasPermission(permissions:[{ modules: "RECRUITER",access: "readOnlyAccess"}]) @rateLimit(window: "60s", max: 60) @isAuthenticated
+  getRecruiterUpcomingEvents(filter: UpcomingEventsFilter!, where: UpcomingEventsWhereInput!): UpcomingEventsResponse @hasRole(roles: ["RECRUITER"]) @isAuthenticated @rateLimit(window: "60s", max: 40)
+  getRecruiterWebDetails: RecruiterDetails @hasRole(roles: ["RECRUITER"]) @rateLimit(window: "60s", max: 40)
+  getRecruiterWebProfileDetails: RecruiterDetails @hasRole(roles: ["RECRUITER"]) @rateLimit(window: "60s", max: 40)
+  sendEmailForExportRecruiters(filter: RecruiterFilter, where: RecruiterWhereFilter): Response @rateLimit(window: "60s", max: 15) @isSystemUser @isAuthenticated
+  recruiterPaymentList(filter: RecruiterPaymentListFilter, where: RecruiterPaymentListWhereInput): RecruiterPaymentListResponse @hasRole(roles: ["RECRUITER"]) @rateLimit(window: "60s", max: 40)
+  recruiterServiceList(filter: RecruiterServiceListFilter, where: RecruiterServiceListWhereInput): RecruiterServiceListResponse @hasRole(roles: ["RECRUITER"]) @rateLimit(window: "60s", max: 40)
+}
+
+input RecruiterPaymentListWhereInput {
+  amount: AmountRangeInput,
+  date: DateRangeInput,
+  transactionStatus: [RecruiterPaymentTransactionStatus]
+}
+
+input RecruiterServiceListWhereInput {
+  amount: AmountRangeInput,
+  date: DateRangeInput,
+  transactionType: [RecruiterServiceTransactionType]
+}
+
+input RecruiterPaymentListFilter {
+  skip: Int
+  limit: Int
+  search: String
+}
+
+type RecruiterPaymentListResponse {
+  count: Int
+  data: [RecruiterPaymentListRaw]
+}
+
+type RecruiterPaymentListRaw {
+  fullName: String
+  status: RecruiterPaymentStatus
+  createdAt: DateTime
+  amount: Float
+}
+
+type RecruiterServiceListResponse {
+  count: Int
+  data: [RecruiterServiceListRaw]
+}
+
+type RecruiterServiceListRaw {
+  id: ID
+  transactionType: RecruiterServiceTransactionType
+  amount: Float
+  createdAt: DateTime
+  event: Event
+}
+
+enum RecruiterPaymentTransactionStatus {
+  COMPLETED
+  CANCELLED
+  PENDING
+  APPROVED
+  REJECTED
+  EXPIRED
+}
+
+enum RecruiterPaymentStatus {
+  PENDING
+  COMPLETED
+  CANCELLED
+  APPROVED
+  REJECTED
+  EXPIRED
+}
+
+enum RecruiterServiceTransactionType {
+  BOOKING_FEES
+  ADDITIONAL_BOOKING_FEES
+  CANCELLATION_CHARGES
+  REFUND
+  WAIVE_OFF
+  CONVENIENCE_FEES
+}
+
+input RecruiterServiceListFilter{
+  skip: Int
+  limit: Int
+  search: String
+}
+
+# =============================RECRUITER DETAILS ============================
+
+type RecruiterDetails {
+  id: ID
+  fullName: String
+  userName: String
+  email: String
+  emailVerified: Boolean
+  verificationStatus: VerificationStatus
+  contactNo: String
+  countryCode: String
+  role: Role
+  isActive: Boolean
+  createdBy: ID
+  updatedBy: ID
+  profile: RecruiterProfileDetails
+  business: RecruiterBusinessDetails
+  profileCompletion: UserProfileCompletion
+}
+
+type UserProfileCompletion {
+  completedProfile: Int
+  title: String
+  messages: [String]
+}
+
+type RecruiterProfileDetails {
+  bio: String
+  profilePhoto: String
+  coverPhoto: String
+  aadharCardFront: String
+  aadharCardBack: String
+  typeKey: RecruiterTypeKey
+}
+
+type RecruiterBusinessDetails {
+  companyName: String
+  addressLine1: String
+  addressLine2: String
+  city: LocationRaw
+  state: LocationRaw
+  country: LocationRaw
+  zipCode: String
+}
+
+# ==========================================UPDATE RECRUITER WEB DETAILS==================================
+
+input UpdateRecruiterWebDetailsInput {
+  coverPhoto: String
+  profilePhoto: String
+}
+
+# =======================================UPDATE RECRUITER WEB PROFILE DETAILS===============================
+
+input UpdateRecruiterWebProfileDetails {
+  fullName: String
+  companyName: String
+  email: String
+  contactNo: String
+  addressLine1: String
+  addressLine2: String
+  country: ID
+  city: ID
+  state: ID
+  zipCode: String
+  aadharCardBack: String
+  aadharCardFront: String
+}
+
+input UpcomingEventsWhereInput {
+  eventDate: DateRangeInput!
+}
+
+input UpcomingEventsFilter {
+  skip: Int
+  limit: Int
+}
+
+type UpcomingEventsResponse {
+  count: Int
+  data: [Event]
+}
+
+enum RecruiterField {
+  id
+  fullName
+  userName
+  email
+  verificationStatus
+  contactNo
+  isActive
+  updatedBy
+  createdAt
+  updatedAt
+  companyName
+}
+
+type RecruiterDashboardDetailsResponse {
+  status: String
+  message: String
+  data: RecruiterDashboardDetailsData
+}
+
+type RecruiterDashboardDetailsData {
+  totalBalance: Float
+  projectsComplete: Int
+  totalSpent: Float
+  totalPayments: Float
+}
+
+input CreateRecruiterProfileDataInput {
+  aadharCardFront: String
+  aadharCardBack: String
+  city: ID
+  state: ID
+  country: ID
+  companyName: String
+  addressLine1: String
+  addressLine2: String
+  zipCode: String
+}
+
+input RecruiterFilter {
+  skip: Int
+  limit: Int
+  sortOn: RecruiterField
+  sortBy: SortUsersBy
+  search: String
+  getDBField: [RecruiterField]
+  distinct: Boolean
+}
+
+input RecruiterWhereFilter {
+  verificationStatus: [VerificationStatus]
+  isActive: [Boolean]
+  typeKey: [RecruiterTypeKey]
+  isDeleted: Boolean
+}
+
+type RecruiterRaw {
+  id: ID
+  fullName: String
+  userName: String
+  email: String
+  contactNo: String
+  isActive: Boolean
+  verificationStatus: String
+  role: Role
+  updatedBy: ID
+  companyName: String
+  typeKey: RecruiterTypeKey
+  aadharCardBack: String
+  aadharCardFront: String
+  countryCode: String
+}
+
+type RecruiterListResponse {
+  count: Int
+  data: [RecruiterRaw]
+}
+
+input RecruiterDetailsInput {
+  fullName: String
+  email: String
+  contactNo: String
+  countryCode: String
+  verificationStatus: VerificationStatus
+  isActive: Boolean
+  bio: String
+  profilePhoto: String
+  coverPhoto: String
+  aadharCardFront: String
+  aadharCardBack: String
+  typeKey: RecruiterTypeKey
+  companyName: String
+  addressLine1: String
+  addressLine2: String
+  city: String
+  state: String
+  country: String
+  zipCode: String
+}
+
+type Recruiter {
+  id: ID!
+  fullName: String
+  userName: String
+  email: String
+  emailVerified: Boolean
+  verificationStatus: VerificationStatus
+  contactNo: String
+  countryCode: String
+  role: Role
+  isActive: Boolean
+  createdBy: ID
+  updatedBy: ID
+  bio: String
+  profilePhoto: String
+  coverPhoto: String
+  aadharCardFront: String
+  aadharCardBack: String
+  typeKey: RecruiterTypeKey
+  companyName: String
+  addressLine1: String
+  addressLine2: String
+  city: countryStateCityResponse
+  state: countryStateCityResponse
+  country: countryStateCityResponse
+  zipCode:  String
+}
+
+type countryStateCityResponse {
+  id: ID
+  name: String
+}
+
+enum Role {
+  SUPER_ADMIN
+  FREELANCER
+  RECRUITER
+}
+
+enum RecruiterTypeKey {
+  PAID
+  NON_PAID
+}
+
+type createRecruiterResponse {
+  status: String!
+  message: String!
+  id: ID!
+}
+
+input UpdateRecruiterWhereInput {
+  id: ID!
+}
+
+type updateRecruiterDetailsResponse {
+  status: String!
+  message: String!
+}
+
+type removeRecruiterResponse {
+  status: String!
+  message: String!
+}
+
+enum VerificationStatus {
+  APPROVED
+  PENDING
+  REJECTED
+}
+
+enum SortUsersBy {
+  DESC,
+  ASC
+}
